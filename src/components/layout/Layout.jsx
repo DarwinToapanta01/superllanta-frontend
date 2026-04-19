@@ -4,6 +4,7 @@ import Topbar from './Topbar'
 import Dashboard from '../../pages/Dashboard'
 import Insumos from '../../pages/Insumos'
 import Clientes from '../../pages/Clientes'
+import Vulcanizados from '../../pages/Vulcanizados'
 
 export default function Layout() {
     return (
@@ -16,6 +17,7 @@ export default function Layout() {
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/insumos" element={<Insumos />} />
                         <Route path="/clientes" element={<Clientes />} />
+                        <Route path="/vulcanizados" element={<Vulcanizados />} />
                     </Routes>
                 </main>
             </div>
