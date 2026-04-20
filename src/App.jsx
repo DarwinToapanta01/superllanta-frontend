@@ -4,6 +4,8 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Layout from './components/layout/Layout'
+import HojaDeVidaQR from './pages/HojaDeVidaQR'
+
 
 const queryClient = new QueryClient()
 
@@ -20,6 +22,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/login" element={usuario ? <Navigate to="/dashboard" /> : <Login />} />
+      <Route path="/qr/:codigo" element={<HojaDeVidaQR />} />
       <Route path="/" element={<Navigate to="/dashboard" />} />
       <Route path="/*" element={
         <RutaProtegida>
