@@ -6,6 +6,8 @@ import Insumos from '../../pages/Insumos'
 import Clientes from '../../pages/Clientes'
 import Vulcanizados from '../../pages/Vulcanizados'
 import Reparaciones from '../../pages/Reparaciones'
+import Reencauches from '../../pages/Reencauches'
+
 
 
 export default function Layout() {
@@ -21,6 +23,7 @@ export default function Layout() {
                         <Route path="/clientes" element={<Clientes />} />
                         <Route path="/vulcanizados" element={<Vulcanizados />} />
                         <Route path="/reparaciones" element={<Reparaciones />} />
+                        <Route path="/reencauches" element={<Reencauches />} />
                     </Routes>
                 </main>
             </div>
