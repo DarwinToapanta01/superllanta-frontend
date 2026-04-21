@@ -8,6 +8,9 @@ import Vulcanizados from '../../pages/Vulcanizados'
 import Reparaciones from '../../pages/Reparaciones'
 import Reencauches from '../../pages/Reencauches'
 import Trazabilidad from '../../pages/Trazabilidad'
+import Usuarios from '../../pages/Usuarios'
+import Neumaticos from '../../pages/Neumaticos'
+
 
 
 export default function Layout() {
@@ -25,6 +28,8 @@ export default function Layout() {
                         <Route path="/reparaciones" element={<Reparaciones />} />
                         <Route path="/reencauches" element={<Reencauches />} />
                         <Route path="/trazabilidad" element={<Trazabilidad />} />
+                        <Route path="/usuarios" element={<Usuarios />} />
+                        <Route path="/neumaticos" element={<Neumaticos />} />
                     </Routes>
                 </main>
             </div>
