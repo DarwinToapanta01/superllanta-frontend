@@ -3,8 +3,10 @@ import { useQuery } from '@tanstack/react-query'
 import { clientesService } from '../../services/clientes'
 import InputMedida from '../ui/InputMedida'
 import InputDOT from '../ui/InputDOT'
+import { Flame, Plus, X } from 'lucide-react'
 
 const detalleVacio = () => ({
+    id_neumatico: null,
     marca: '', medida: '', dot: '', dotValido: true,
     deja_rin: false, descripcion: '', precio: ''
 })
@@ -21,19 +23,62 @@ export default function FormVulcanizado({ onGuardar, cargando, onCancelar }) {
         queryFn: () => clientesService.listar().then(r => r.data)
     })
 
-    const setForm_ = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrores(e => ({ ...e, [k]: '' })) }
+    const { data: neumaticosCliente = [], isLoading: cargandoNeumaticos } = useQuery({
+        queryKey: ['neumaticos-cliente', form.id_cliente],
+        queryFn: () => clientesService.neumaticos(form.id_cliente).then(r => r.data),
+        enabled: !!form.id_cliente,
+    })
+
+    const setForm_ = (k, v) => {
+        setForm(f => ({ ...f, [k]: v }))
+        setErrores(e => ({ ...e, [k]: '' }))
+    }
+
+    const handleClienteChange = (id) => {
+        setForm_('id_cliente', id)
+        // Limpiar neumáticos al cambiar cliente
+        setDetalles([detalleVacio()])
+    }
 
     const setDetalle = (i, k, v) => {
         setDetalles(d => d.map((item, idx) => idx === i ? { ...item, [k]: v } : item))
         setErrores(e => ({ ...e, [`${k}_${i}`]: '' }))
     }
 
-    const setDOT = (i, valor, esValido) => {
-        setDetalles(d => d.map((item, idx) => idx === i ? { ...item, dot: valor, dotValido: esValido } : item))
+    const setDOT = (i, val, esValido) => {
+        setDetalles(d => d.map((item, idx) => idx === i
+            ? { ...item, dot: val, dotValido: esValido } : item))
+    }
+
+    const seleccionarNeumatico = (i, neu) => {
+        setDetalles(d => d.map((item, idx) => idx === i ? {
+            ...item,
+            id_neumatico: neu.id_neumatico,
+            marca: neu.marca || '',
+            medida: neu.medida || '',
+            dot: neu.dot || '',
+            dotValido: true,
+        } : item))
+        setErrores(e => ({
+            ...e,
+            [`marca_${i}`]: '',
+            [`medida_${i}`]: '',
+            [`dot_${i}`]: ''
+        }))
+    }
+
+    const limpiarNeumatico = (i) => {
+        setDetalles(d => d.map((item, idx) => idx === i ? {
+            ...item,
+            id_neumatico: null,
+            marca: '', medida: '', dot: '', dotValido: true,
+        } : item))
     }
 
     const agregarDetalle = () => setDetalles(d => [...d, detalleVacio()])
-    const eliminarDetalle = (i) => { if (detalles.length > 1) setDetalles(d => d.filter((_, idx) => idx !== i)) }
+    const eliminarDetalle = (i) => {
+        if (detalles.length > 1) setDetalles(d => d.filter((_, idx) => idx !== i))
+    }
 
     const total = detalles.reduce((s, d) => s + (parseFloat(d.precio) || 0), 0)
     const saldo = Math.max(0, total - (parseFloat(form.abono) || 0))
@@ -44,7 +89,7 @@ export default function FormVulcanizado({ onGuardar, cargando, onCancelar }) {
         detalles.forEach((d, i) => {
             if (!d.marca) e[`marca_${i}`] = 'Requerido'
             if (!d.medida) e[`medida_${i}`] = 'Requerido'
-            if (!d.precio || parseFloat(d.precio) <= 0) e[`precio_${i}`] = 'Ingresa un precio válido'
+            if (!d.precio || parseFloat(d.precio) <= 0) e[`precio_${i}`] = 'Precio inválido'
             if (d.dot && !d.dotValido) e[`dot_${i}`] = 'DOT inválido'
         })
         if (form.abono && parseFloat(form.abono) > total) e.abono = 'El abono no puede superar el total'
@@ -60,26 +105,37 @@ export default function FormVulcanizado({ onGuardar, cargando, onCancelar }) {
             fecha_entrega_estimada: form.fecha_entrega_estimada || null,
             abono: parseFloat(form.abono) || 0,
             observaciones: form.observaciones || null,
-            detalles: detalles.map(({ dotValido, ...d }) => ({ ...d, precio: parseFloat(d.precio) }))
+            detalles: detalles.map(({ dotValido, ...d }) => ({
+                ...d,
+                precio: parseFloat(d.precio)
+            }))
         })
     }
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-1">
+
+            {/* Cliente y fecha */}
             <div className="grid grid-cols-2 gap-3">
                 <div>
-                    <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">Cliente *</label>
-                    <select value={form.id_cliente} onChange={e => setForm_('id_cliente', e.target.value)}
+                    <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">
+                        Cliente *
+                    </label>
+                    <select value={form.id_cliente} onChange={e => handleClienteChange(e.target.value)}
                         className={`w-full h-9 border rounded-lg px-3 text-sm focus:outline-none focus:border-[#2563A8] ${errores.id_cliente ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}>
                         <option value="">Selecciona un cliente</option>
                         {clientes.map(c => (
-                            <option key={c.id_cliente} value={c.id_cliente}>{c.nombre} {c.apellido || ''}</option>
+                            <option key={c.id_cliente} value={c.id_cliente}>
+                                {c.nombre} {c.apellido || ''}
+                            </option>
                         ))}
                     </select>
                     {errores.id_cliente && <p className="text-[10px] text-red-500 mt-1">{errores.id_cliente}</p>}
                 </div>
                 <div>
-                    <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">Fecha entrega estimada</label>
+                    <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">
+                        Fecha entrega estimada
+                    </label>
                     <input type="date" value={form.fecha_entrega_estimada}
                         min={new Date().toISOString().split('T')[0]}
                         onChange={e => setForm_('fecha_entrega_estimada', e.target.value)}
@@ -87,22 +143,88 @@ export default function FormVulcanizado({ onGuardar, cargando, onCancelar }) {
                 </div>
             </div>
 
+            {/* Neumáticos */}
             <div>
                 <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-semibold text-[#1A2332] uppercase tracking-wide">Neumáticos *</label>
+                    <label className="text-xs font-semibold text-[#1A2332] uppercase tracking-wide">
+                        Neumáticos *
+                    </label>
                     <button type="button" onClick={agregarDetalle}
-                        className="text-xs text-[#2563A8] hover:underline">+ Agregar neumático</button>
+                        className="text-xs text-[#2563A8] hover:underline flex items-center gap-1">
+                        <Plus size={11} /> Agregar neumático
+                    </button>
                 </div>
+
                 <div className="space-y-3">
                     {detalles.map((d, i) => (
-                        <div key={i} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <div key={i} className="bg-gray-50 border border-gray-200 rounded-xl p-3">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs font-semibold text-[#1C3F6E] bg-blue-50 px-2 py-0.5 rounded-md">Neumático {i + 1}</span>
+                                <span className="text-xs font-semibold text-[#1C3F6E] bg-blue-50 px-2 py-0.5 rounded-md">
+                                    Neumático {i + 1}
+                                </span>
                                 {detalles.length > 1 && (
                                     <button type="button" onClick={() => eliminarDetalle(i)}
-                                        className="text-red-400 hover:text-red-600 text-xs">✕ Eliminar</button>
+                                        className="text-red-400 hover:text-red-600 p-1">
+                                        <X size={13} />
+                                    </button>
                                 )}
                             </div>
+
+                            {/* Selector de llanta existente del cliente */}
+                            {form.id_cliente && neumaticosCliente.length > 0 && !d.id_neumatico && (
+                                <div className="mb-3">
+                                    <label className="block text-[10px] font-semibold text-gray-500 mb-1">
+                                        SELECCIONAR LLANTA REGISTRADA DEL CLIENTE
+                                    </label>
+                                    {cargandoNeumaticos ? (
+                                        <div className="text-xs text-gray-400 py-2">Buscando llantas...</div>
+                                    ) : (
+                                        <div className="flex flex-wrap gap-2">
+                                            {neumaticosCliente.map(neu => (
+                                                <button
+                                                    key={neu.id_neumatico}
+                                                    type="button"
+                                                    onClick={() => seleccionarNeumatico(i, neu)}
+                                                    className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs hover:border-[#1C3F6E] hover:bg-blue-50 transition-colors text-left"
+                                                >
+                                                    <Flame size={11} className="text-orange-400 flex-shrink-0" />
+                                                    <div>
+                                                        <div className="font-medium text-[#1A2332]">
+                                                            {neu.marca} · {neu.medida}
+                                                        </div>
+                                                        {neu.dot && (
+                                                            <div className="text-[10px] text-gray-400">DOT: {neu.dot}</div>
+                                                        )}
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    <div className="mt-1 text-[10px] text-gray-400">
+                                        O ingresa los datos manualmente abajo
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Llanta seleccionada — mostrar badge y opción de cambiar */}
+                            {d.id_neumatico && (
+                                <div className="flex items-center gap-2 mb-3 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                                    <Flame size={13} className="text-[#1C3F6E] flex-shrink-0" />
+                                    <div className="flex-1 text-xs">
+                                        <span className="font-semibold text-[#1C3F6E]">
+                                            {d.marca} · {d.medida}
+                                        </span>
+                                        {d.dot && <span className="text-gray-500"> · DOT: {d.dot}</span>}
+                                        <span className="text-green-600 ml-2">✓ Vinculada a hoja de vida</span>
+                                    </div>
+                                    <button type="button" onClick={() => limpiarNeumatico(i)}
+                                        className="text-gray-400 hover:text-red-400 transition-colors">
+                                        <X size={13} />
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Campos de datos del neumático */}
                             <div className="grid grid-cols-3 gap-2 mb-2">
                                 <div>
                                     <label className="block text-[10px] font-semibold text-gray-500 mb-1">MARCA *</label>
@@ -113,25 +235,24 @@ export default function FormVulcanizado({ onGuardar, cargando, onCancelar }) {
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-semibold text-gray-500 mb-1">MEDIDA *</label>
-                                    <InputMedida
-                                        value={d.medida}
+                                    <InputMedida value={d.medida}
                                         onChange={v => setDetalle(i, 'medida', v)}
-                                        error={errores[`medida_${i}`]}
-                                    />
+                                        error={errores[`medida_${i}`]} />
                                     {errores[`medida_${i}`] && <p className="text-[10px] text-red-500 mt-0.5">Requerido</p>}
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-semibold text-gray-500 mb-1">DOT</label>
-                                    <InputDOT
-                                        value={d.dot}
+                                    <InputDOT value={d.dot}
                                         onChange={(val, esValido) => setDOT(i, val, esValido)}
-                                        error={errores[`dot_${i}`]}
-                                    />
+                                        error={errores[`dot_${i}`]} />
                                 </div>
                             </div>
+
                             <div className="grid grid-cols-3 gap-2">
                                 <div className="col-span-2">
-                                    <label className="block text-[10px] font-semibold text-gray-500 mb-1">DESCRIPCIÓN DEL DAÑO</label>
+                                    <label className="block text-[10px] font-semibold text-gray-500 mb-1">
+                                        DESCRIPCIÓN DEL DAÑO
+                                    </label>
                                     <input value={d.descripcion} onChange={e => setDetalle(i, 'descripcion', e.target.value)}
                                         placeholder="Ej: Separación de capas zona interna"
                                         className="w-full h-8 border border-gray-300 rounded-lg px-2 text-xs focus:outline-none" />
@@ -145,20 +266,26 @@ export default function FormVulcanizado({ onGuardar, cargando, onCancelar }) {
                                     {errores[`precio_${i}`] && <p className="text-[10px] text-red-500 mt-0.5">Precio inválido</p>}
                                 </div>
                             </div>
+
                             <div className="flex items-center gap-2 mt-2">
                                 <input type="checkbox" id={`rin_${i}`} checked={d.deja_rin}
                                     onChange={e => setDetalle(i, 'deja_rin', e.target.checked)}
                                     className="w-3.5 h-3.5 accent-[#1C3F6E]" />
-                                <label htmlFor={`rin_${i}`} className="text-xs text-gray-600">El cliente deja el rin</label>
+                                <label htmlFor={`rin_${i}`} className="text-xs text-gray-600">
+                                    El cliente deja el rin
+                                </label>
                             </div>
                         </div>
                     ))}
                 </div>
             </div>
 
+            {/* Observaciones y cobro */}
             <div className="grid grid-cols-2 gap-3">
                 <div>
-                    <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">Observaciones</label>
+                    <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">
+                        Observaciones
+                    </label>
                     <textarea value={form.observaciones} onChange={e => setForm_('observaciones', e.target.value)}
                         rows={2} placeholder="Ej: Cliente retira el viernes..."
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
@@ -166,7 +293,8 @@ export default function FormVulcanizado({ onGuardar, cargando, onCancelar }) {
                 <div className="bg-[#1C3F6E] rounded-xl p-3 text-white">
                     <div className="text-xs text-white/60 font-semibold mb-2">Resumen de cobro</div>
                     <div className="flex justify-between text-xs text-white/80 mb-1">
-                        <span>Total</span><span className="font-semibold">${total.toFixed(2)}</span>
+                        <span>Total</span>
+                        <span className="font-semibold">${total.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs text-white/80 mb-2">
                         <span>Abono</span>
@@ -177,14 +305,17 @@ export default function FormVulcanizado({ onGuardar, cargando, onCancelar }) {
                     </div>
                     {errores.abono && <p className="text-[10px] text-red-300 mb-1">{errores.abono}</p>}
                     <div className="flex justify-between text-sm font-bold border-t border-white/20 pt-2">
-                        <span>Saldo</span><span className="text-[#F5C400]">${saldo.toFixed(2)}</span>
+                        <span>Saldo</span>
+                        <span className="text-[#F5C400]">${saldo.toFixed(2)}</span>
                     </div>
                 </div>
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
                 <button type="button" onClick={onCancelar}
-                    className="h-9 px-4 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancelar</button>
+                    className="h-9 px-4 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+                    Cancelar
+                </button>
                 <button type="submit" disabled={cargando}
                     className="h-9 px-5 bg-[#1C3F6E] hover:bg-[#2563A8] text-white text-sm font-semibold rounded-lg disabled:opacity-60">
                     {cargando ? 'Guardando...' : 'Guardar orden'}
