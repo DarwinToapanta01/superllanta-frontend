@@ -28,6 +28,8 @@ export default function Vulcanizados() {
     const [modalForm, setModalForm] = useState(false)
     const [modalDetalle, setModalDetalle] = useState(false)
     const [vulcanizadoSeleccionado, setVulcanizadoSeleccionado] = useState(null)
+    const [qrsNuevos, setQrsNuevos] = useState([])
+    const [modalQR, setModalQR] = useState(false)
 
     const { data: vulcanizados = [], isLoading } = useQuery({
         queryKey: ['vulcanizados', filtroEstado],
@@ -38,10 +40,18 @@ export default function Vulcanizados() {
 
     const mutacionCrear = useMutation({
         mutationFn: (data) => vulcanizadosService.crear(data),
-        onSuccess: () => {
+        onSuccess: (res) => {
             queryClient.invalidateQueries(['vulcanizados'])
+            queryClient.invalidateQueries(['neumaticos-taller'])
             setModalForm(false)
-            mostrar('Orden de vulcanizado registrada correctamente')
+
+            const qrs = res.data.qrs_generados
+            if (qrs && qrs.length > 0) {
+                setQrsNuevos(qrs)
+                setModalQR(true)
+            } else {
+                mostrar('Orden de vulcanizado registrada correctamente')
+            }
         },
         onError: (err) => mostrar(err.response?.data?.error || 'Error al guardar', 'error')
     })
@@ -151,10 +161,10 @@ export default function Vulcanizados() {
                                 key={v.id_vulcanizado}
                                 onClick={() => abrirDetalle(v)}
                                 className={`bg-white rounded-xl p-4 cursor-pointer hover:border-[#1C3F6E] transition-colors border ${entregaPasada
-                                        ? 'border-l-4 border-l-red-400 border-gray-200'
-                                        : entregaHoy
-                                            ? 'border-l-4 border-l-orange-400 border-gray-200'
-                                            : 'border-gray-200'
+                                    ? 'border-l-4 border-l-red-400 border-gray-200'
+                                    : entregaHoy
+                                        ? 'border-l-4 border-l-orange-400 border-gray-200'
+                                        : 'border-gray-200'
                                     }`}
                             >
                                 {/* Header */}
@@ -194,8 +204,8 @@ export default function Vulcanizados() {
                                     <div className="flex justify-between text-gray-500">
                                         <span>Entrega estimada</span>
                                         <span className={`font-medium ${entregaPasada ? 'text-red-500'
-                                                : entregaHoy ? 'text-orange-500'
-                                                    : 'text-[#1A2332]'
+                                            : entregaHoy ? 'text-orange-500'
+                                                : 'text-[#1A2332]'
                                             }`}>
                                             {formatFecha(v.fecha_entrega_estimada)}
                                         </span>
@@ -257,6 +267,29 @@ export default function Vulcanizados() {
                     })}
                     cargando={mutacionEstado.isPending || mutacionAbono.isPending}
                 />
+            </Modal>
+            import VistaQR from '../components/trazabilidad/VistaQR'
+
+            {/* Modal QRs generados automáticamente */}
+            <Modal
+                abierto={modalQR}
+                onCerrar={() => { setModalQR(false); setQrsNuevos([]); mostrar('Orden de vulcanizado registrada correctamente') }}
+                titulo={`${qrsNuevos.length} QR${qrsNuevos.length > 1 ? 's' : ''} generado${qrsNuevos.length > 1 ? 's' : ''} para las llantas`}
+                ancho="max-w-md"
+            >
+                <div className="space-y-4">
+                    {qrsNuevos.map((qr, i) => (
+                        <div key={i}>
+                            {qrsNuevos.length > 1 && (
+                                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                                    Llanta {i + 1} — {qr.marca} · {qr.medida}
+                                </div>
+                            )}
+                            <VistaQR data={{ neumatico: qr, qr_imagen: qr.qr_imagen, codigo_qr: qr.codigo_qr }} />
+                            {i < qrsNuevos.length - 1 && <div className="border-t border-gray-200 mt-4" />}
+                        </div>
+                    ))}
+                </div>
             </Modal>
         </div>
     )

@@ -8,6 +8,7 @@ import Toast from '../components/ui/Toast'
 import useToast from '../hooks/useToast'
 import FormReparacion from '../components/reparaciones/FormReparacion'
 import DetalleReparacion from '../components/reparaciones/DetalleReparacion'
+import VistaQR from '../components/trazabilidad/VistaQR'
 
 const TIPOS = {
     arreglo: { label: 'Arreglo', variante: 'info' },
@@ -22,6 +23,8 @@ export default function Reparaciones() {
     const [modalForm, setModalForm] = useState(false)
     const [modalDetalle, setModalDetalle] = useState(false)
     const [seleccionado, setSeleccionado] = useState(null)
+    const [qrNuevo, setQrNuevo] = useState(null)
+    const [modalQR, setModalQR] = useState(false)
 
     const { data: reparaciones = [], isLoading } = useQuery({
         queryKey: ['reparaciones', filtroTipo],
@@ -32,11 +35,18 @@ export default function Reparaciones() {
 
     const mutacionCrear = useMutation({
         mutationFn: (data) => reparacionesService.crear(data),
-        onSuccess: () => {
+        onSuccess: (res) => {
             queryClient.invalidateQueries(['reparaciones'])
-            queryClient.invalidateQueries(['productos'])
+            queryClient.invalidateQueries(['neumaticos-taller'])
             setModalForm(false)
-            mostrar('Reparación registrada correctamente')
+
+            // Si se generó un QR nuevo, mostrarlo
+            if (res.data.qr_generado) {
+                setQrNuevo(res.data.qr_generado)
+                setModalQR(true)
+            } else {
+                mostrar('Reparación registrada correctamente')
+            }
         },
         onError: (err) => mostrar(err.response?.data?.error || 'Error al guardar', 'error')
     })
@@ -175,6 +185,16 @@ export default function Reparaciones() {
                 onCerrar={() => { setModalDetalle(false); setSeleccionado(null) }}
                 titulo="Detalle de reparación">
                 <DetalleReparacion reparacion={seleccionado} />
+            </Modal>
+
+            {/* Modal QR generado automáticamente */}
+            <Modal
+                abierto={modalQR}
+                onCerrar={() => { setModalQR(false); setQrNuevo(null); mostrar('Reparación registrada correctamente') }}
+                titulo="QR generado para la llanta"
+                ancho="max-w-md"
+            >
+                <VistaQR data={qrNuevo ? { neumatico: qrNuevo, qr_imagen: qrNuevo.qr_imagen, codigo_qr: qrNuevo.codigo_qr } : null} />
             </Modal>
         </div>
     )
