@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
+import { QrCode, Package, Flame, TrendingUp, User, Wrench } from 'lucide-react'
 
 export default function Login() {
     const [correo, setCorreo] = useState('')
@@ -30,17 +31,22 @@ export default function Login() {
         <div className="min-h-screen flex">
             {/* Panel izquierdo azul */}
             <div className="hidden lg:flex w-[45%] bg-[#1C3F6E] flex-col items-center justify-center px-12">
-                <div className="w-16 h-16 bg-[#F5C400] rounded-2xl flex items-center justify-center text-3xl mb-6">⬡</div>
+                <div className="w-16 h-16 bg-[#F5C400] rounded-2xl flex items-center justify-center mb-6">
+                    <div className="w-8 h-8 bg-[#1C3F6E] rounded-lg"></div>
+                </div>
                 <h1 className="text-3xl font-bold text-white mb-2">Superllanta</h1>
                 <p className="text-sm text-white/50 text-center mb-10">Sistema de gestión para vulcanizadora de transporte</p>
                 <div className="space-y-4 w-full max-w-xs">
-                    {[['⬛', 'Trazabilidad QR', 'Hoja de vida digital por neumático'],
-                    ['📦', 'Control de inventario', 'Insumos y neumáticos en tiempo real'],
-                    ['🔥', 'Servicios', 'Vulcanizados, reencauches y reparaciones'],
-                    ['📈', 'Reportes', 'Análisis de servicios e insumos']
-                    ].map(([icon, title, desc]) => (
+                    {[
+                        { Icon: QrCode, title: 'Trazabilidad QR', desc: 'Hoja de vida digital por neumático' },
+                        { Icon: Package, title: 'Control de inventario', desc: 'Insumos y neumáticos en tiempo real' },
+                        { Icon: Flame, title: 'Servicios', desc: 'Vulcanizados, reencauches y reparaciones' },
+                        { Icon: TrendingUp, title: 'Reportes', desc: 'Análisis de servicios e insumos' },
+                    ].map(({ Icon, title, desc }) => (
                         <div key={title} className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center text-sm flex-shrink-0">{icon}</div>
+                            <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Icon size={16} className="text-white" />
+                            </div>
                             <div>
                                 <p className="text-white text-sm font-medium">{title}</p>
                                 <p className="text-white/50 text-xs">{desc}</p>
@@ -101,10 +107,10 @@ export default function Login() {
                         </div>
                         <div className="flex gap-2">
                             <div className="flex-1 h-9 border border-gray-200 rounded-lg flex items-center justify-center gap-2 text-xs text-gray-500 bg-gray-50">
-                                <span>👤</span> Administrador
+                                <User size={14} /> Administrador
                             </div>
                             <div className="flex-1 h-9 border border-gray-200 rounded-lg flex items-center justify-center gap-2 text-xs text-gray-500 bg-gray-50">
-                                <span>🔧</span> Técnico
+                                <Wrench size={14} /> Técnico
                             </div>
                         </div>
                     </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Badge from '../ui/Badge'
+import { Phone, Flame, FileText, Clock } from 'lucide-react'
 
 const ESTADOS = {
     pendiente: { label: 'Pendiente', variante: 'warning' },
@@ -77,7 +78,7 @@ export default function DetalleVulcanizado({ vulcanizado: v, onCambiarEstado, on
                 <div className="bg-[#1C3F6E] rounded-xl p-3 text-white">
                     <div className="text-xs text-white/50 mb-1">Cliente</div>
                     <div className="text-sm font-semibold">{v.cliente?.nombre} {v.cliente?.apellido || ''}</div>
-                    {v.cliente?.telefono && <div className="text-xs text-white/60 mt-0.5">📞 {v.cliente.telefono}</div>}
+                    {v.cliente?.telefono && <div className="text-xs text-white/60 mt-0.5 flex items-center gap-1"><Phone size={12} /> {v.cliente.telefono}</div>}
                 </div>
                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
                     <div className="text-xs text-gray-500 mb-1">Fechas</div>
@@ -100,8 +101,8 @@ export default function DetalleVulcanizado({ vulcanizado: v, onCambiarEstado, on
                     {v.detalles?.map((d, i) => (
                         <div key={i} className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
                             <div className="flex items-center justify-between">
-                                <div className="text-sm font-medium text-[#1A2332]">
-                                    🔥 {d.marca} · {d.medida} {d.dot ? `· DOT ${d.dot}` : ''}
+                                <div className="text-sm font-medium text-[#1A2332] flex items-center gap-1">
+                                    <Flame size={14} className="text-orange-500" /> {d.marca} · {d.medida} {d.dot ? `· DOT ${d.dot}` : ''}
                                 </div>
                                 <div className="text-sm font-semibold text-[#1C3F6E]">${parseFloat(d.precio || 0).toFixed(2)}</div>
                             </div>
@@ -116,8 +117,8 @@ export default function DetalleVulcanizado({ vulcanizado: v, onCambiarEstado, on
 
             {/* Observaciones */}
             {v.observaciones && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 text-xs text-yellow-800">
-                    📝 {v.observaciones}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 text-xs text-yellow-800 flex items-start gap-1">
+                    <FileText size={12} className="flex-shrink-0 mt-0.5" /> {v.observaciones}
                 </div>
             )}
 
@@ -157,8 +158,8 @@ export default function DetalleVulcanizado({ vulcanizado: v, onCambiarEstado, on
             {v.estado !== 'entregado' && (
                 <div>
                     {mensajeBloqueo ? (
-                        <div className="w-full bg-orange-50 border border-orange-200 rounded-lg px-4 py-3 text-xs text-orange-700 text-center">
-                            ⏳ {mensajeBloqueo}
+                        <div className="w-full bg-orange-50 border border-orange-200 rounded-lg px-4 py-3 text-xs text-orange-700 text-center flex items-center justify-center gap-2">
+                            <Clock size={13} /> {mensajeBloqueo}
                         </div>
                     ) : siguienteEstado() ? (
                         <button

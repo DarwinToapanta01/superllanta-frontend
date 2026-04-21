@@ -1,3 +1,5 @@
+import { ClipboardList, Printer, Smartphone } from 'lucide-react'
+
 export default function VistaQR({ data }) {
     if (!data) return null
 
@@ -16,14 +18,14 @@ export default function VistaQR({ data }) {
         @media print { button { display: none; } }
       </style></head>
       <body>
-        <div class="titulo">⬡ Superllanta</div>
+        <div class="titulo">Superllanta</div>
         <img src="${qr_imagen}" alt="QR" />
         <div class="codigo">${codigo_qr}</div>
         <div class="info">${neumatico?.marca || ''} · ${neumatico?.medida || ''}</div>
         ${neumatico?.dot ? `<div class="info">DOT: ${neumatico.dot}</div>` : ''}
         <div class="info">${neumatico?.cliente?.nombre || ''}</div>
         <br/>
-        <button onclick="window.print()">🖨️ Imprimir</button>
+        <button onclick="window.print()">Imprimir</button>
       </body></html>
     `)
         ventana.document.close()
@@ -61,7 +63,7 @@ export default function VistaQR({ data }) {
 
             {/* Instrucciones */}
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3 text-xs text-yellow-800 text-left">
-                <div className="font-semibold mb-1">📋 Instrucciones:</div>
+                <div className="font-semibold mb-1 flex items-center gap-1"><ClipboardList size={13} /> Instrucciones:</div>
                 <div>1. Imprime este QR y adhiérelo a la llanta</div>
                 <div>2. Al escanear con cualquier celular se abrirá la hoja de vida</div>
                 <div>3. El historial se actualiza automáticamente con cada servicio</div>
@@ -70,12 +72,12 @@ export default function VistaQR({ data }) {
             {/* Botones */}
             <div className="flex gap-3">
                 <button onClick={imprimir}
-                    className="flex-1 h-10 bg-[#1C3F6E] hover:bg-[#2563A8] text-white text-sm font-semibold rounded-lg transition-colors">
-                    🖨️ Imprimir QR
+                    className="flex-1 h-10 bg-[#1C3F6E] hover:bg-[#2563A8] text-white text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+                    <Printer size={15} /> Imprimir QR
                 </button>
                 <a href={`/qr/${codigo_qr}`} target="_blank" rel="noreferrer"
-                    className="flex-1 h-10 border border-[#1C3F6E] text-[#1C3F6E] text-sm font-semibold rounded-lg flex items-center justify-center hover:bg-blue-50 transition-colors">
-                    📱 Ver hoja de vida
+                    className="flex-1 h-10 border border-[#1C3F6E] text-[#1C3F6E] text-sm font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-blue-50 transition-colors">
+                    <Smartphone size={15} /> Ver hoja de vida
                 </a>
             </div>
         </div>

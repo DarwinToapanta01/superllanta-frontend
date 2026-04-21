@@ -1,4 +1,5 @@
 import Badge from '../ui/Badge'
+import { Phone, Wrench, ArrowLeftRight, FileText } from 'lucide-react'
 
 export default function DetalleReparacion({ reparacion: r }) {
     if (!r) return null
@@ -10,14 +11,17 @@ export default function DetalleReparacion({ reparacion: r }) {
                 <div className="bg-[#1C3F6E] rounded-xl p-3 text-white">
                     <div className="text-xs text-white/50 mb-1">Cliente</div>
                     <div className="text-sm font-semibold">{r.cliente?.nombre} {r.cliente?.apellido || ''}</div>
-                    {r.cliente?.telefono && <div className="text-xs text-white/60 mt-0.5">📞 {r.cliente.telefono}</div>}
+                    {r.cliente?.telefono && <div className="text-xs text-white/60 mt-0.5 flex items-center gap-1"><Phone size={12} /> {r.cliente.telefono}</div>}
                 </div>
                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
                     <div className="text-xs text-gray-500 mb-1">Información</div>
                     <div className="text-xs text-[#1A2332]">
                         <div>Fecha: <span className="font-medium">{new Date(r.fecha).toLocaleDateString('es-EC')}</span></div>
-                        <div className="mt-0.5">Tipo: <Badge variante={r.tipo_reparacion === 'arreglo' ? 'info' : 'warning'}>
-                            {r.tipo_reparacion === 'arreglo' ? '🔧 Arreglo' : '🔄 Cambio'}
+                        <div className="mt-0.5 flex items-center gap-1">Tipo: <Badge variante={r.tipo_reparacion === 'arreglo' ? 'info' : 'warning'}>
+                            <span className="flex items-center gap-1">
+                                {r.tipo_reparacion === 'arreglo' ? <Wrench size={10} /> : <ArrowLeftRight size={10} />}
+                                {r.tipo_reparacion === 'arreglo' ? 'Arreglo' : 'Cambio'}
+                            </span>
                         </Badge></div>
                     </div>
                 </div>
@@ -31,8 +35,8 @@ export default function DetalleReparacion({ reparacion: r }) {
                     {r.dot_neumatico && <span className="text-xs text-gray-500">DOT: {r.dot_neumatico}</span>}
                 </div>
                 {r.descripcion && (
-                    <div className="text-xs text-gray-500 mt-2 bg-white rounded px-2 py-1.5 border border-gray-200">
-                        📝 {r.descripcion}
+                    <div className="text-xs text-gray-500 mt-2 bg-white rounded px-2 py-1.5 border border-gray-200 flex items-start gap-1">
+                        <FileText size={12} className="flex-shrink-0 mt-0.5" /> {r.descripcion}
                     </div>
                 )}
             </div>
@@ -60,8 +64,8 @@ export default function DetalleReparacion({ reparacion: r }) {
             {/* Detalle cambio */}
             {r.tipo_reparacion === 'cambio' && r.detalles_cambio?.length > 0 && (
                 <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
-                    <div className="text-xs font-semibold text-orange-700 mb-2 uppercase tracking-wide">
-                        🔄 Detalle del cambio
+                    <div className="text-xs font-semibold text-orange-700 mb-2 uppercase tracking-wide flex items-center gap-1">
+                        <ArrowLeftRight size={13} /> Detalle del cambio
                     </div>
                     <div className="flex items-center justify-between text-sm">
                         <div className="text-[#1A2332]">
@@ -85,8 +89,8 @@ export default function DetalleReparacion({ reparacion: r }) {
             </div>
 
             {r.observaciones && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 text-xs text-yellow-800">
-                    📝 {r.observaciones}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 text-xs text-yellow-800 flex items-start gap-1">
+                    <FileText size={12} className="flex-shrink-0 mt-0.5" /> {r.observaciones}
                 </div>
             )}
         </div>

@@ -76,7 +76,7 @@ export default function InputMedida({ value, onChange, error, placeholder = 'Sel
             <optgroup label="Auto">
                 {MEDIDAS_PREDEFINIDAS.slice(20).map(m => <option key={m}>{m}</option>)}
             </optgroup>
-            <option value="__otra__">✏️ Otra medida (escribir)</option>
+            <option value="__otra__">→ Otra medida (escribir)</option>
         </select>
     )
 }

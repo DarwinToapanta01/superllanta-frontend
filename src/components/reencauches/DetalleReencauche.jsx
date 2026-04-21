@@ -1,4 +1,5 @@
 import Badge from '../ui/Badge'
+import { Phone, RefreshCw, FileText, Clock } from 'lucide-react'
 
 const ESTADOS = {
     pendiente: { label: 'Pendiente', variante: 'gray' },
@@ -70,7 +71,7 @@ export default function DetalleReencauche({ reencauche: r, onCambiarEstado, carg
                 <div className="bg-[#1C3F6E] rounded-xl p-3 text-white">
                     <div className="text-xs text-white/50 mb-1">Cliente</div>
                     <div className="text-sm font-semibold">{r.cliente?.nombre} {r.cliente?.apellido || ''}</div>
-                    {r.cliente?.telefono && <div className="text-xs text-white/60 mt-0.5">📞 {r.cliente.telefono}</div>}
+                    {r.cliente?.telefono && <div className="text-xs text-white/60 mt-0.5 flex items-center gap-1"><Phone size={12} /> {r.cliente.telefono}</div>}
                 </div>
                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs text-[#1A2332]">
                     <div className="text-xs text-gray-500 mb-1">Fechas</div>
@@ -93,8 +94,8 @@ export default function DetalleReencauche({ reencauche: r, onCambiarEstado, carg
                     {r.detalles?.map((d, i) => (
                         <div key={i} className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
                             <div className="flex items-center justify-between">
-                                <div className="text-sm font-medium text-[#1A2332]">
-                                    <span>♻️ {d.marca} · {d.medida}</span>
+                                <div className="text-sm font-medium text-[#1A2332] flex items-center gap-1">
+                                    <RefreshCw size={13} className="text-green-600" /> <span>{d.marca} · {d.medida}</span>
                                     {d.dot ? <span className="text-xs text-gray-500"> · DOT {d.dot}</span> : null}
                                 </div>
                                 <span className="text-sm font-semibold text-[#1C3F6E]">${parseFloat(d.precio || 0).toFixed(2)}</span>
@@ -109,8 +110,8 @@ export default function DetalleReencauche({ reencauche: r, onCambiarEstado, carg
             </div>
 
             {r.observaciones && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 text-xs text-yellow-800">
-                    <span>📝 {r.observaciones}</span>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 text-xs text-yellow-800 flex items-start gap-1">
+                    <FileText size={12} className="flex-shrink-0 mt-0.5" /> {r.observaciones}
                 </div>
             )}
 
@@ -133,8 +134,8 @@ export default function DetalleReencauche({ reencauche: r, onCambiarEstado, carg
             {r.estado !== 'entregado' && (
                 <div>
                     {mensajeBloqueo ? (
-                        <div className="w-full bg-orange-50 border border-orange-200 rounded-lg px-4 py-3 text-xs text-orange-700 text-center">
-                            <span>⏳ {mensajeBloqueo}</span>
+                        <div className="w-full bg-orange-50 border border-orange-200 rounded-lg px-4 py-3 text-xs text-orange-700 text-center flex items-center justify-center gap-2">
+                            <Clock size={13} /> {mensajeBloqueo}
                         </div>
                     ) : siguienteEstado() ? (
                         <button onClick={() => onCambiarEstado(siguienteEstado())} disabled={cargando}

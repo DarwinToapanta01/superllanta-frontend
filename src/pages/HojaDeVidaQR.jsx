@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { neumaticosService } from '../services/neumaticos'
+import { Flame, RefreshCw, Wrench, ArrowLeftRight, Scissors, ClipboardList, Phone, XCircle } from 'lucide-react'
 
 export default function HojaDeVidaQR() {
     const { codigo } = useParams()
@@ -23,7 +24,7 @@ export default function HojaDeVidaQR() {
     if (isError || !neumatico) return (
         <div className="min-h-screen bg-[#F5F6FA] flex items-center justify-center px-4">
             <div className="text-center">
-                <div className="text-4xl mb-4">❌</div>
+                <div className="flex justify-center mb-4"><XCircle size={48} className="text-red-400" /></div>
                 <h2 className="text-lg font-bold text-[#1A2332] mb-2">QR no encontrado</h2>
                 <p className="text-sm text-gray-500">El código escaneado no corresponde a ningún neumático registrado.</p>
             </div>
@@ -31,12 +32,12 @@ export default function HojaDeVidaQR() {
     )
 
     const iconoServicio = (tipo) => {
-        if (tipo === 'vulcanizado') return '🔥'
-        if (tipo === 'reencauche') return '♻️'
-        if (tipo === 'reparacion') return '🔧'
-        if (tipo === 'cambio') return '🔄'
-        if (tipo === 'parchado') return '🩹'
-        return '📋'
+        if (tipo === 'vulcanizado') return <Flame size={16} className="text-orange-500" />
+        if (tipo === 'reencauche') return <RefreshCw size={16} className="text-green-600" />
+        if (tipo === 'reparacion') return <Wrench size={16} className="text-blue-600" />
+        if (tipo === 'cambio') return <ArrowLeftRight size={16} className="text-orange-600" />
+        if (tipo === 'parchado') return <Scissors size={16} className="text-purple-600" />
+        return <ClipboardList size={16} className="text-gray-500" />
     }
 
     const estadoColor = (estado) => {
@@ -49,7 +50,12 @@ export default function HojaDeVidaQR() {
         <div className="min-h-screen bg-[#F5F6FA]" style={{ maxWidth: '430px', margin: '0 auto' }}>
             {/* Header */}
             <div className="bg-[#1C3F6E] px-4 pt-6 pb-5">
-                <div className="text-[#F5C400] font-bold text-base mb-4">⬡ Superllanta</div>
+                <div className="text-[#F5C400] font-bold text-base mb-4 flex items-center gap-2">
+                    <div className="w-4 h-4 bg-[#F5C400] rounded flex items-center justify-center flex-shrink-0">
+                        <div className="w-2 h-2 bg-[#1C3F6E] rounded-sm"></div>
+                    </div>
+                    Superllanta
+                </div>
                 <div className="text-[10px] text-white/40 font-mono mb-1">{neumatico.codigo_qr}</div>
                 <div className="text-[#F5C400] text-lg font-bold">{neumatico.marca} · {neumatico.medida}</div>
                 <div className="text-white/60 text-xs mt-1">
@@ -79,7 +85,10 @@ export default function HojaDeVidaQR() {
                                 {neumatico.cliente?.nombre} {neumatico.cliente?.apellido || ''}
                             </div>
                             {neumatico.cliente?.telefono && (
-                                <div className="text-xs text-gray-500 mt-0.5">📞 {neumatico.cliente.telefono}</div>
+                                <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                                    <Phone size={12} />
+                                    {neumatico.cliente.telefono}
+                                </div>
                             )}
                         </div>
                     </div>

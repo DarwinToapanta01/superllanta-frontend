@@ -1,6 +1,4 @@
-// ============================================================
 // VALIDACIONES REUTILIZABLES - Superllanta
-// ============================================================
 
 const AÑO_MINIMO_DOT = 20 // 2020 hacia atrás no se acepta
 

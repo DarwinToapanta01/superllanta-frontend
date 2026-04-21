@@ -4,6 +4,7 @@ import { clientesService } from '../../services/clientes'
 import { productosService } from '../../services/productos'
 import InputMedida from '../ui/InputMedida'
 import InputDOT from '../ui/InputDOT'
+import { Wrench, ArrowLeftRight } from 'lucide-react'
 
 export default function FormReparacion({ onGuardar, cargando, onCancelar }) {
     const [tipo, setTipo] = useState('arreglo')
@@ -96,19 +97,19 @@ export default function FormReparacion({ onGuardar, cargando, onCancelar }) {
 
             {/* Selector tipo */}
             <div>
-                <label className="block text-xs font-semibold text-[#1A2332] mb-2 uppercase tracking-wide">
+                <label className="block text-xs font-semibold text-[#1A2332] mb-2 mt-1 uppercase tracking-wide">
                     Tipo de servicio *
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 p-1">
                     <button type="button" onClick={() => setTipo('arreglo')}
                         className={`h-16 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all ${tipo === 'arreglo' ? 'border-[#1C3F6E] bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
-                        <span className="text-xl">🔧</span>
+                        <Wrench size={20} className="text-[#1C3F6E]" />
                         <span className="text-xs font-semibold text-[#1A2332]">Arreglo</span>
                         <span className="text-[10px] text-gray-500">Parches, moñones, válvulas</span>
                     </button>
                     <button type="button" onClick={() => setTipo('cambio')}
                         className={`h-16 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all ${tipo === 'cambio' ? 'border-[#E67E22] bg-orange-50' : 'border-gray-200 hover:border-gray-300'}`}>
-                        <span className="text-xl">🔄</span>
+                        <ArrowLeftRight size={20} className="text-orange-600" />
                         <span className="text-xs font-semibold text-[#1A2332]">Cambio de neumático</span>
                         <span className="text-[10px] text-gray-500">Solo mano de obra</span>
                     </button>
@@ -132,8 +133,8 @@ export default function FormReparacion({ onGuardar, cargando, onCancelar }) {
             {tipo === 'arreglo' && (
                 <>
                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
-                        <div className="text-xs font-semibold text-[#1C3F6E] mb-3 uppercase tracking-wide">
-                            🔧 Neumático a reparar
+                        <div className="text-xs font-semibold text-[#1C3F6E] mb-3 uppercase tracking-wide flex items-center gap-1">
+                            <Wrench size={13} /> Neumático a reparar
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                             <div>
@@ -225,8 +226,8 @@ export default function FormReparacion({ onGuardar, cargando, onCancelar }) {
             {/* CAMBIO: cantidad y precio simplificado */}
             {tipo === 'cambio' && (
                 <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-                    <div className="text-xs font-semibold text-orange-700 mb-4 uppercase tracking-wide">
-                        🔄 Detalle del cambio
+                    <div className="text-xs font-semibold text-orange-700 mb-4 uppercase tracking-wide flex items-center gap-1">
+                        <ArrowLeftRight size={13} /> Detalle del cambio
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>

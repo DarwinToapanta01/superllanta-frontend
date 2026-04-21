@@ -8,6 +8,7 @@ import Toast from '../components/ui/Toast'
 import useToast from '../hooks/useToast'
 import FormVulcanizado from '../components/vulcanizados/FormVulcanizado'
 import DetalleVulcanizado from '../components/vulcanizados/DetalleVulcanizado'
+import { Flame, FileText } from 'lucide-react'
 
 const ESTADOS = {
     pendiente: { label: 'Pendiente', variante: 'warning' },
@@ -180,8 +181,8 @@ export default function Vulcanizados() {
 
                                 {/* Detalles neumáticos */}
                                 {v.detalles?.map((d, i) => (
-                                    <div key={i} className="text-xs text-gray-500 mb-1">
-                                        <span>🔥 </span>
+                                    <div key={i} className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                                        <Flame size={12} className="text-orange-500 flex-shrink-0" />
                                         <span>{d.marca} {d.medida}</span>
                                         {d.dot ? <span> · DOT: {d.dot}</span> : null}
                                         {d.deja_rin ? <span> · Deja rin</span> : null}
@@ -215,8 +216,8 @@ export default function Vulcanizados() {
 
                                 {/* Observaciones */}
                                 {v.observaciones ? (
-                                    <div className="mt-2 text-[10px] text-gray-400 bg-gray-50 rounded-lg px-2 py-1 truncate">
-                                        <span>📝 {v.observaciones}</span>
+                                    <div className="mt-2 text-[10px] text-gray-400 bg-gray-50 rounded-lg px-2 py-1 truncate flex items-center gap-1">
+                                        <FileText size={11} className="flex-shrink-0" /> {v.observaciones}
                                     </div>
                                 ) : null}
                             </div>

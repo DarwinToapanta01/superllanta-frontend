@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { clientesService } from '../services/clientes'
+import { Phone, MapPin } from 'lucide-react'
 import Modal from '../components/ui/Modal'
 import Spinner from '../components/ui/Spinner'
 import Toast from '../components/ui/Toast'
@@ -85,12 +86,14 @@ export default function Clientes() {
                                     <div className="space-y-1 mb-3">
                                         {c.telefono && (
                                             <div className="flex items-center gap-2 text-xs text-gray-500">
-                                                <span>📞</span>{c.telefono}
+                                                <Phone size={11} className="flex-shrink-0" />
+                                                <span>{c.telefono}</span>
                                             </div>
                                         )}
                                         {c.direccion && (
                                             <div className="flex items-center gap-2 text-xs text-gray-500">
-                                                <span>📍</span>{c.direccion}
+                                                <MapPin size={11} className="flex-shrink-0" />
+                                                <span>{c.direccion}</span>
                                             </div>
                                         )}
                                     </div>

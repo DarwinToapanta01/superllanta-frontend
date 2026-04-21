@@ -8,6 +8,7 @@ import Toast from '../components/ui/Toast'
 import useToast from '../hooks/useToast'
 import FormReencauche from '../components/reencauches/FormReencauche'
 import DetalleReencauche from '../components/reencauches/DetalleReencauche'
+import { RefreshCw } from 'lucide-react'
 
 const ESTADOS = {
     pendiente: { label: 'Pendiente', variante: 'gray' },
@@ -163,8 +164,8 @@ export default function Reencauches() {
 
                                 {/* Neumáticos */}
                                 {r.detalles?.map((d, i) => (
-                                    <div key={i} className="text-xs text-gray-500 mb-1">
-                                        <span>♻️ </span>
+                                    <div key={i} className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                                        <RefreshCw size={12} className="text-green-600 flex-shrink-0" />
                                         <span>{d.marca} {d.medida}</span>
                                         {d.tipo_reencauche ? <span> · {d.tipo_reencauche}</span> : null}
                                         {d.dot ? <span> · DOT: {d.dot}</span> : null}

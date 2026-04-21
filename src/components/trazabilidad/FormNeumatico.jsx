@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { clientesService } from '../../services/clientes'
 import InputMedida from '../ui/InputMedida'
 import InputDOT from '../ui/InputDOT'
+import { Info } from 'lucide-react'
 
 export default function FormNeumatico({ onGuardar, cargando, onCancelar }) {
     const [form, setForm] = useState({
@@ -43,8 +44,9 @@ export default function FormNeumatico({ onGuardar, cargando, onCancelar }) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-xs text-blue-700">
-                ℹ️ Al registrar el neumático se generará automáticamente un código QR único que podrás imprimir y adherir a la llanta.
+            <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-xs text-blue-700 flex items-start gap-2">
+                <Info size={14} className="flex-shrink-0 mt-0.5" />
+                Al registrar el neumático se generará automáticamente un código QR único que podrás imprimir y adherir a la llanta.
             </div>
 
             <div>
