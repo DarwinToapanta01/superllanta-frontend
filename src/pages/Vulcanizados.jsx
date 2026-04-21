@@ -9,6 +9,7 @@ import useToast from '../hooks/useToast'
 import FormVulcanizado from '../components/vulcanizados/FormVulcanizado'
 import DetalleVulcanizado from '../components/vulcanizados/DetalleVulcanizado'
 import { Flame, FileText } from 'lucide-react'
+import VistaQR from '../components/trazabilidad/VistaQR'
 
 const ESTADOS = {
     pendiente: { label: 'Pendiente', variante: 'warning' },
@@ -139,102 +140,107 @@ export default function Vulcanizados() {
             </div>
 
             {/* Contenido */}
-            {isLoading ? (
-                <Spinner />
-            ) : vulcanizados.length === 0 ? (
-                <div className="bg-white border border-gray-200 rounded-xl p-10 text-center text-gray-400 text-sm">
-                    {filtroEstado
-                        ? <span>No hay vulcanizados con estado {filtroEstado}</span>
-                        : <span>No hay vulcanizados registrados</span>
-                    }
-                </div>
-            ) : (
-                <div className="grid grid-cols-2 gap-4">
-                    {vulcanizados.map(v => {
-                        const entregaHoy = esHoy(v.fecha_entrega_estimada)
-                        const entregaPasada = esPasada(v.fecha_entrega_estimada, v.estado)
-                        const saldo = parseFloat(v.saldo || 0)
-                        const abono = parseFloat(v.abono || 0)
+            <div className="flex-1">
+                {isLoading ? (
+                    <Spinner />
+                ) : vulcanizados.length === 0 ? (
+                    <div className="bg-white border border-gray-200 rounded-xl p-10 text-center text-gray-400 text-sm">
+                        {filtroEstado
+                            ? <span>No hay vulcanizados con estado {filtroEstado.replace('_', ' ')}</span>
+                            : <span>No hay vulcanizados registrados</span>
+                        }
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                        {vulcanizados.map(v => {
+                            const entregaHoy = esHoy(v.fecha_entrega_estimada)
+                            const entregaPasada = esPasada(v.fecha_entrega_estimada, v.estado)
+                            const saldo = parseFloat(v.saldo || 0)
+                            const abono = parseFloat(v.abono || 0)
 
-                        return (
-                            <div
-                                key={v.id_vulcanizado}
-                                onClick={() => abrirDetalle(v)}
-                                className={`bg-white rounded-xl p-4 cursor-pointer hover:border-[#1C3F6E] transition-colors border ${entregaPasada
-                                    ? 'border-l-4 border-l-red-400 border-gray-200'
-                                    : entregaHoy
-                                        ? 'border-l-4 border-l-orange-400 border-gray-200'
-                                        : 'border-gray-200'
-                                    }`}
-                            >
-                                {/* Header */}
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-semibold text-[#1A2332]">
-                                        {v.cliente?.nombre}{v.cliente?.apellido ? ' ' + v.cliente.apellido : ''}
-                                    </span>
-                                    <div className="flex items-center gap-2">
-                                        {entregaHoy && (
-                                            <span className="text-[9px] bg-red-50 text-red-600 border border-red-300 px-2 py-0.5 rounded-full font-semibold">
-                                                HOY
+                            return (
+                                <div
+                                    key={v.id_vulcanizado}
+                                    onClick={() => abrirDetalle(v)}
+                                    className={`bg-white rounded-xl p-4 cursor-pointer hover:border-[#1C3F6E] transition-colors border ${entregaPasada
+                                        ? 'border-l-4 border-l-red-400 border-gray-200'
+                                        : entregaHoy
+                                            ? 'border-l-4 border-l-orange-400 border-gray-200'
+                                            : 'border-gray-200'
+                                        }`}
+                                >
+                                    {/* Header */}
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm font-semibold text-[#1A2332]">
+                                            {v.cliente?.nombre}
+                                            {v.cliente?.apellido ? <span> {v.cliente.apellido}</span> : null}
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            {entregaHoy && (
+                                                <span className="text-[9px] bg-red-50 text-red-600 border border-red-300 px-2 py-0.5 rounded-full font-semibold">
+                                                    HOY
+                                                </span>
+                                            )}
+                                            {entregaPasada && (
+                                                <span className="text-[9px] bg-red-50 text-red-600 border border-red-300 px-2 py-0.5 rounded-full font-semibold">
+                                                    VENCIDO
+                                                </span>
+                                            )}
+                                            <Badge variante={ESTADOS[v.estado]?.variante}>
+                                                {ESTADOS[v.estado]?.label}
+                                            </Badge>
+                                        </div>
+                                    </div>
+
+                                    {/* Detalles neumáticos */}
+                                    {v.detalles?.map((d, i) => (
+                                        <div key={i} className="text-xs text-gray-500 mb-1">
+                                            <span className="inline-flex items-center gap-1">
+                                                <Flame size={11} className="text-orange-400" />
+                                                <span>{d.marca} {d.medida}</span>
+                                                {d.dot ? <span> · DOT: {d.dot}</span> : null}
+                                                {d.deja_rin ? <span> · Deja rin</span> : null}
                                             </span>
-                                        )}
-                                        {entregaPasada && (
-                                            <span className="text-[9px] bg-red-50 text-red-600 border border-red-300 px-2 py-0.5 rounded-full font-semibold">
-                                                VENCIDO
+                                        </div>
+                                    ))}
+
+                                    {/* Fechas y cobro */}
+                                    <div className="grid grid-cols-2 gap-x-4 mt-3 text-xs">
+                                        <div className="flex justify-between text-gray-500">
+                                            <span>Entrega estimada</span>
+                                            <span className={`font-medium ${entregaPasada ? 'text-red-500'
+                                                : entregaHoy ? 'text-orange-500'
+                                                    : 'text-[#1A2332]'
+                                                }`}>
+                                                {formatFecha(v.fecha_entrega_estimada)}
                                             </span>
-                                        )}
-                                        <Badge variante={ESTADOS[v.estado]?.variante}>
-                                            {ESTADOS[v.estado]?.label}
-                                        </Badge>
+                                        </div>
+                                        <div className="flex justify-between text-gray-500">
+                                            <span>Abono</span>
+                                            <span className="font-medium text-[#1A2332]">
+                                                ${abono.toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-500 mt-1">
+                                            <span>Saldo pendiente</span>
+                                            <span className={`font-semibold ${saldo > 0 ? 'text-red-500' : 'text-green-600'}`}>
+                                                ${saldo.toFixed(2)}
+                                            </span>
+                                        </div>
                                     </div>
+
+                                    {/* Observaciones */}
+                                    {v.observaciones ? (
+                                        <div className="mt-2 text-[10px] text-gray-400 bg-gray-50 rounded-lg px-2 py-1 truncate">
+                                            <span>{v.observaciones}</span>
+                                        </div>
+                                    ) : null}
                                 </div>
-
-                                {/* Detalles neumáticos */}
-                                {v.detalles?.map((d, i) => (
-                                    <div key={i} className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                                        <Flame size={12} className="text-orange-500 flex-shrink-0" />
-                                        <span>{d.marca} {d.medida}</span>
-                                        {d.dot ? <span> · DOT: {d.dot}</span> : null}
-                                        {d.deja_rin ? <span> · Deja rin</span> : null}
-                                    </div>
-                                ))}
-
-                                {/* Fechas y cobro */}
-                                <div className="grid grid-cols-2 gap-x-4 mt-3 text-xs">
-                                    <div className="flex justify-between text-gray-500">
-                                        <span>Entrega estimada</span>
-                                        <span className={`font-medium ${entregaPasada ? 'text-red-500'
-                                            : entregaHoy ? 'text-orange-500'
-                                                : 'text-[#1A2332]'
-                                            }`}>
-                                            {formatFecha(v.fecha_entrega_estimada)}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between text-gray-500">
-                                        <span>Abono</span>
-                                        <span className="font-medium text-[#1A2332]">
-                                            ${abono.toFixed(2)}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between text-gray-500 mt-1">
-                                        <span>Saldo pendiente</span>
-                                        <span className={`font-semibold ${saldo > 0 ? 'text-red-500' : 'text-green-600'}`}>
-                                            ${saldo.toFixed(2)}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Observaciones */}
-                                {v.observaciones ? (
-                                    <div className="mt-2 text-[10px] text-gray-400 bg-gray-50 rounded-lg px-2 py-1 truncate flex items-center gap-1">
-                                        <FileText size={11} className="flex-shrink-0" /> {v.observaciones}
-                                    </div>
-                                ) : null}
-                            </div>
-                        )
-                    })}
-                </div>
-            )}
+                            )
+                        })}
+                    </div>
+                )}
+            </div>
 
             {/* Modal nueva orden */}
             <Modal
@@ -268,7 +274,6 @@ export default function Vulcanizados() {
                     cargando={mutacionEstado.isPending || mutacionAbono.isPending}
                 />
             </Modal>
-            import VistaQR from '../components/trazabilidad/VistaQR'
 
             {/* Modal QRs generados automáticamente */}
             <Modal
