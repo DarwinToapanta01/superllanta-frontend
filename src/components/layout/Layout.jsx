@@ -10,6 +10,7 @@ import Reencauches from '../../pages/Reencauches'
 import Trazabilidad from '../../pages/Trazabilidad'
 import Usuarios from '../../pages/Usuarios'
 import Neumaticos from '../../pages/Neumaticos'
+import Reportes from '../../pages/Reportes'
 
 
 
@@ -30,6 +31,7 @@ export default function Layout() {
                         <Route path="/trazabilidad" element={<Trazabilidad />} />
                         <Route path="/usuarios" element={<Usuarios />} />
                         <Route path="/neumaticos" element={<Neumaticos />} />
+                        <Route path="/reportes" element={<Reportes />} />
                     </Routes>
                 </main>
             </div>
