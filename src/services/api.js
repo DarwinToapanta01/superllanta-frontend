@@ -15,10 +15,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
-            localStorage.removeItem('token')
-            localStorage.removeItem('usuario')
-            window.location.href = '/login'
+        if (error.response?.status === 403 && error.response?.data?.codigo === 'FUERA_HORARIO') {
+            // Emitir evento global para que el Layout muestre la pantalla de horario
+            window.dispatchEvent(new CustomEvent('fuera-horario', {
+                detail: error.response.data
+            }))
         }
         return Promise.reject(error)
     }
