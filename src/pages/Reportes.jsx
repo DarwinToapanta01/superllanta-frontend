@@ -2,31 +2,89 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { reportesService } from '../services/reportes'
 import Spinner from '../components/ui/Spinner'
-import { BarChart2, Package, Wrench, Flame, RefreshCw, FileText, Download } from 'lucide-react'
+import { BarChart2, Package, Wrench, Flame, RefreshCw, Shield } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 
-const hoy = new Date().toISOString().split('T')[0]
-const primerDiaMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]
+// ─── Componente auxiliar — FUERA del componente principal ────
+function TablaDetalle({ titulo, icon: Icon, iconColor, datos, columnas }) {
+    return (
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-gray-50">
+                <Icon size={14} className={iconColor} />
+                <span className="text-xs font-semibold text-[#1A2332] uppercase tracking-wide">{titulo}</span>
+                <span className="ml-auto text-xs text-gray-400">{datos.length} registros</span>
+            </div>
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                    <thead>
+                        <tr className="border-b border-gray-100">
+                            {columnas.map(col => (
+                                <th key={col.label} className="px-4 py-2 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
+                                    {col.label}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {datos.map((row, i) => (
+                            <tr key={i} className={`border-b border-gray-50 hover:bg-gray-50 ${i % 2 === 0 ? '' : 'bg-gray-50/30'}`}>
+                                {columnas.map(col => (
+                                    <td key={col.label} className="px-4 py-2 text-xs text-gray-700">
+                                        {col.render(row)}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    )
+}
 
+// ─── Componente principal ─────────────────────────────────────
 export default function Reportes() {
+    const { usuario } = useAuth()
+    const esAdmin = usuario?.rol === 'administrador'
+
+    // Mover aquí para que siempre reflejen la fecha actual
+    const hoy = new Date().toISOString().split('T')[0]
+    const primerDiaMes = new Date(
+        new Date().getFullYear(), new Date().getMonth(), 1
+    ).toISOString().split('T')[0]
+
     const [tab, setTab] = useState('servicios')
     const [desde, setDesde] = useState(primerDiaMes)
     const [hasta, setHasta] = useState(hoy)
     const [tipoServicio, setTipoServicio] = useState('')
 
-    const { data: dataServicios, isLoading: cargandoServicios, refetch: refetchServicios } = useQuery({
+    const { data: dataServicios, isLoading: cargandoServicios } = useQuery({
         queryKey: ['reporte-servicios', desde, hasta, tipoServicio],
         queryFn: () => reportesService.servicios({ desde, hasta, tipo: tipoServicio || undefined }).then(r => r.data),
-        enabled: tab === 'servicios'
+        enabled: tab === 'servicios' && esAdmin
     })
 
-    const { data: dataInsumos, isLoading: cargandoInsumos, refetch: refetchInsumos } = useQuery({
+    const { data: dataInsumos, isLoading: cargandoInsumos } = useQuery({
         queryKey: ['reporte-insumos', desde, hasta],
         queryFn: () => reportesService.insumos({ desde, hasta }).then(r => r.data),
-        enabled: tab === 'insumos'
+        enabled: tab === 'insumos' && esAdmin
     })
 
     const formatFecha = (f) => f ? new Date(f).toLocaleDateString('es-EC') : '—'
     const formatMoney = (n) => `$${parseFloat(n || 0).toFixed(2)}`
+
+    // Acceso denegado para técnicos
+    if (!esAdmin) {
+        return (
+            <div className="bg-white border border-gray-200 rounded-xl p-10 text-center">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Shield size={20} className="text-red-500" />
+                </div>
+                <p className="text-sm font-semibold text-[#1A2332] mb-1">Acceso restringido</p>
+                <p className="text-xs text-gray-500">Solo los administradores pueden ver los reportes.</p>
+            </div>
+        )
+    }
 
     const tarjetasResumen = dataServicios ? [
         { label: 'Vulcanizados', cantidad: dataServicios.resumen.vulcanizados.cantidad, total: dataServicios.resumen.vulcanizados.total, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-50' },
@@ -67,7 +125,9 @@ export default function Reportes() {
                     )}
                     <div className="flex items-center gap-2 ml-auto">
                         <span className="text-xs text-gray-400">
-                            {desde === primerDiaMes && hasta === hoy ? 'Mes actual' : `${formatFecha(desde)} — ${formatFecha(hasta)}`}
+                            {desde === primerDiaMes && hasta === hoy
+                                ? 'Mes actual'
+                                : `${formatFecha(desde)} — ${formatFecha(hasta)}`}
                         </span>
                     </div>
                 </div>
@@ -81,8 +141,8 @@ export default function Reportes() {
                 ].map(({ id, label, icon: Icon }) => (
                     <button key={id} onClick={() => setTab(id)}
                         className={`flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-medium transition-colors ${tab === id
-                                ? 'bg-[#1C3F6E] text-white'
-                                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                            ? 'bg-[#1C3F6E] text-white'
+                            : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                             }`}>
                         <Icon size={14} />
                         <span>{label}</span>
@@ -95,7 +155,6 @@ export default function Reportes() {
                 <div className="space-y-5">
                     {cargandoServicios ? <Spinner /> : dataServicios ? (
                         <>
-                            {/* Tarjetas resumen */}
                             <div className="grid grid-cols-4 gap-3">
                                 {tarjetasResumen.map(({ label, cantidad, total, icon: Icon, color, bg }) => (
                                     <div key={label} className="bg-white border border-gray-200 rounded-xl p-4">
@@ -111,7 +170,6 @@ export default function Reportes() {
                                 ))}
                             </div>
 
-                            {/* Total general */}
                             <div className="bg-[#1C3F6E] rounded-xl p-4 flex items-center justify-between">
                                 <div className="text-white">
                                     <div className="text-xs text-white/60 mb-1">Total facturado en el período</div>
@@ -120,17 +178,18 @@ export default function Reportes() {
                                     </div>
                                 </div>
                                 <div className="text-white/40 text-right text-xs">
-                                    <div>{dataServicios.resumen.vulcanizados.cantidad + dataServicios.resumen.reencauches.cantidad + dataServicios.resumen.arreglos.cantidad + dataServicios.resumen.cambios.cantidad} servicios totales</div>
+                                    <div>
+                                        {dataServicios.resumen.vulcanizados.cantidad +
+                                            dataServicios.resumen.reencauches.cantidad +
+                                            dataServicios.resumen.arreglos.cantidad +
+                                            dataServicios.resumen.cambios.cantidad} servicios totales
+                                    </div>
                                     <div className="mt-1">{formatFecha(desde)} — {formatFecha(hasta)}</div>
                                 </div>
                             </div>
 
-                            {/* Detalle vulcanizados */}
                             {dataServicios.detalle.vulcanizados.length > 0 && (!tipoServicio || tipoServicio === 'vulcanizado') && (
-                                <TablaDetalle
-                                    titulo="Vulcanizados"
-                                    icon={Flame}
-                                    iconColor="text-orange-500"
+                                <TablaDetalle titulo="Vulcanizados" icon={Flame} iconColor="text-orange-500"
                                     datos={dataServicios.detalle.vulcanizados}
                                     columnas={[
                                         { label: 'Cliente', render: r => `${r.cliente?.nombre} ${r.cliente?.apellido || ''}` },
@@ -144,12 +203,8 @@ export default function Reportes() {
                                 />
                             )}
 
-                            {/* Detalle reencauches */}
                             {dataServicios.detalle.reencauches.length > 0 && (!tipoServicio || tipoServicio === 'reencauche') && (
-                                <TablaDetalle
-                                    titulo="Reencauches"
-                                    icon={RefreshCw}
-                                    iconColor="text-blue-500"
+                                <TablaDetalle titulo="Reencauches" icon={RefreshCw} iconColor="text-blue-500"
                                     datos={dataServicios.detalle.reencauches}
                                     columnas={[
                                         { label: 'Cliente', render: r => `${r.cliente?.nombre} ${r.cliente?.apellido || ''}` },
@@ -163,12 +218,8 @@ export default function Reportes() {
                                 />
                             )}
 
-                            {/* Detalle reparaciones */}
                             {dataServicios.detalle.reparaciones.length > 0 && (!tipoServicio || tipoServicio === 'arreglo' || tipoServicio === 'cambio' || tipoServicio === 'reparacion') && (
-                                <TablaDetalle
-                                    titulo="Reparaciones y cambios"
-                                    icon={Wrench}
-                                    iconColor="text-green-500"
+                                <TablaDetalle titulo="Reparaciones y cambios" icon={Wrench} iconColor="text-green-500"
                                     datos={dataServicios.detalle.reparaciones}
                                     columnas={[
                                         { label: 'Cliente', render: r => `${r.cliente?.nombre} ${r.cliente?.apellido || ''}` },
@@ -181,7 +232,6 @@ export default function Reportes() {
                                 />
                             )}
 
-                            {/* Sin datos */}
                             {dataServicios.detalle.vulcanizados.length === 0 &&
                                 dataServicios.detalle.reencauches.length === 0 &&
                                 dataServicios.detalle.reparaciones.length === 0 && (
@@ -199,7 +249,6 @@ export default function Reportes() {
                 <div>
                     {cargandoInsumos ? <Spinner /> : dataInsumos ? (
                         <div className="space-y-3">
-                            {/* Resumen */}
                             <div className="bg-[#1C3F6E] rounded-xl p-4 flex items-center justify-between">
                                 <div className="text-white">
                                     <div className="text-xs text-white/60 mb-1">Insumos consumidos en el período</div>
@@ -247,43 +296,6 @@ export default function Reportes() {
                     ) : null}
                 </div>
             )}
-        </div>
-    )
-}
-
-// Componente auxiliar para tablas de detalle
-function TablaDetalle({ titulo, icon: Icon, iconColor, datos, columnas }) {
-    return (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-gray-50">
-                <Icon size={14} className={iconColor} />
-                <span className="text-xs font-semibold text-[#1A2332] uppercase tracking-wide">{titulo}</span>
-                <span className="ml-auto text-xs text-gray-400">{datos.length} registros</span>
-            </div>
-            <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                    <thead>
-                        <tr className="border-b border-gray-100">
-                            {columnas.map(col => (
-                                <th key={col.label} className="px-4 py-2 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
-                                    {col.label}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {datos.map((row, i) => (
-                            <tr key={i} className={`border-b border-gray-50 hover:bg-gray-50 ${i % 2 === 0 ? '' : 'bg-gray-50/30'}`}>
-                                {columnas.map(col => (
-                                    <td key={col.label} className="px-4 py-2 text-xs text-gray-700">
-                                        {col.render(row)}
-                                    </td>
-                                ))}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
         </div>
     )
 }

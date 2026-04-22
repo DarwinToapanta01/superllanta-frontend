@@ -35,10 +35,12 @@ export default function Sidebar() {
             seccion: 'Gestión',
             items: [
                 { to: '/clientes', icon: Users, label: 'Clientes' },
-                { to: '/reportes', icon: BarChart2, label: 'Reportes' },
-                ...(esAdmin ? [{ to: '/usuarios', icon: UserCog, label: 'Usuarios' }] : []),
+                ...(esAdmin ? [
+                    { to: '/reportes', icon: BarChart2, label: 'Reportes' },
+                    { to: '/usuarios', icon: UserCog, label: 'Usuarios' },
+                ] : []),
             ]
-        },
+        }, ,
     ]
 
     return (
