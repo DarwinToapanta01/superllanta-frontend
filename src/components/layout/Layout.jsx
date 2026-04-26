@@ -13,8 +13,10 @@ import Trazabilidad from '../../pages/Trazabilidad'
 import Usuarios from '../../pages/Usuarios'
 import Neumaticos from '../../pages/Neumaticos'
 import Reportes from '../../pages/Reportes'
+import { useAuth } from '../../context/AuthContext'
 
 export default function Layout() {
+    const { logout } = useAuth()
     const [fueraHorario, setFueraHorario] = useState(null)
 
     useEffect(() => {
@@ -38,6 +40,12 @@ export default function Layout() {
                     <p className="text-[10px] text-gray-400 mt-4">
                         Si necesitas acceso urgente, contacta al administrador del sistema.
                     </p>
+                    <button
+                        onClick={logout}
+                        className="w-full h-10 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-xl transition-colors"
+                    >
+                        Cerrar sesión
+                    </button>
                 </div>
             </div>
         )
