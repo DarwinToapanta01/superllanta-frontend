@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query'
 import { clientesService } from '../../services/clientes'
 import SelectorVehiculo from '../ui/SelectorVehiculo'
 import BuscadorCliente from '../ui/BuscadorCliente'
-import InputMedida from '../ui/InputMedida'
+import BuscadorMarca from '../ui/BuscadorMarca'
+import BuscadorMedida from '../ui/BuscadorMedida'
 import InputDOT from '../ui/InputDOT'
 
 const TIPOS_REENCAUCHE = ['Caliente', 'Frío', 'Precurado']
@@ -133,16 +134,20 @@ export default function FormReencauche({ onGuardar, cargando, onCancelar }) {
                             <div className="grid grid-cols-4 gap-2 mb-2">
                                 <div>
                                     <label className="block text-[10px] font-semibold text-gray-500 mb-1">MARCA *</label>
-                                    <input value={d.marca} onChange={e => setDetalle(i, 'marca', e.target.value)}
-                                        placeholder="Ej: Michelin"
-                                        className={`w-full h-8 border rounded-lg px-2 text-xs focus:outline-none ${errores[`marca_${i}`] ? 'border-red-400' : 'border-gray-300'}`} />
+                                    <BuscadorMarca
+                                        value={d.marca}
+                                        onChange={v => setDetalle(i, 'marca', v)}
+                                        error={errores[`marca_${i}`]}
+                                    />
                                     {errores[`marca_${i}`] && <p className="text-[10px] text-red-500 mt-0.5">Requerido</p>}
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-semibold text-gray-500 mb-1">MEDIDA *</label>
-                                    <InputMedida value={d.medida}
+                                    <BuscadorMedida
+                                        value={d.medida}
                                         onChange={v => setDetalle(i, 'medida', v)}
-                                        error={errores[`medida_${i}`]} />
+                                        error={errores[`medida_${i}`]}
+                                    />
                                     {errores[`medida_${i}`] && <p className="text-[10px] text-red-500 mt-0.5">Requerido</p>}
                                 </div>
                                 <div>

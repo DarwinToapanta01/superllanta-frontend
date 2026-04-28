@@ -9,4 +9,5 @@ export const productosService = {
     historialMovimientos: (id) => api.get(`/productos/${id}/movimientos`),
     alertas: () => api.get('/productos/alertas'),
     categorias: () => api.get('/categorias'),
+    eliminar: (id) => api.delete(`/productos/${id}`),
 }

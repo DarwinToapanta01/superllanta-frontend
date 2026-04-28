@@ -53,6 +53,16 @@ export default function Insumos() {
         onError: (err) => mostrar(err.response?.data?.error || 'Error al registrar movimiento', 'error')
     })
 
+    const mutacionEliminar = useMutation({
+        mutationFn: (id) => productosService.eliminar(id),
+        onSuccess: (data) => {
+            queryClient.invalidateQueries(['productos'])
+            mostrar(data.data.mensaje || 'Insumo eliminado correctamente')
+        },
+        onError: (err) => mostrar(err.response?.data?.error || 'Error al eliminar', 'error')
+    })
+
+    const [confirmarEliminar, setConfirmarEliminar] = useState(null)
     // Filtros locales
     const productosFiltrados = productos.filter(p => {
         const coincideBuscar = p.nombre.toLowerCase().includes(buscar.toLowerCase())
@@ -167,9 +177,14 @@ export default function Insumos() {
                                     <td className="px-4 py-3 text-gray-600">${parseFloat(p.precio_compra || 0).toFixed(2)}</td>
                                     <td className="px-4 py-3 text-gray-600">${parseFloat(p.precio_venta || 0).toFixed(2)}</td>
                                     <td className="px-4 py-3">{estadoStock(p)}</td>
-                                    <td className="px-4 py-3">
-                                        <button onClick={() => abrirEditar(p)} className="text-[#2563A8] text-xs hover:underline mr-3">Editar</button>
+                                    <td className="px-4 py-3 flex items-center gap-2">
+                                        <button onClick={() => abrirEditar(p)} className="text-[#2563A8] text-xs hover:underline">Editar</button>
+                                        <span className="text-gray-300">|</span>
                                         <button onClick={() => abrirMovimiento(p)} className="text-[#2563A8] text-xs hover:underline">Movimiento</button>
+                                        <span className="text-gray-300">|</span>
+                                        <button onClick={() => setConfirmarEliminar(p)} className="text-red-400 text-xs hover:underline hover:text-red-600">
+                                            Eliminar
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -205,6 +220,43 @@ export default function Insumos() {
                     cargando={mutacionMovimiento.isPending}
                     onCancelar={() => { setModalMovimiento(false); setProductoSeleccionado(null) }}
                 />
+            </Modal>
+
+            {/* Modal confirmar eliminar */}
+            <Modal
+                abierto={!!confirmarEliminar}
+                onCerrar={() => setConfirmarEliminar(null)}
+                titulo="Eliminar insumo"
+            >
+                <div className="space-y-4">
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                        <p className="text-2xl mb-2">⚠️</p>
+                        <p className="text-sm font-semibold text-[#1A2332]">
+                            ¿Eliminar "{confirmarEliminar?.nombre}"?
+                        </p>
+                        <p className="text-xs text-gray-500 mt-2">
+                            Si tiene historial de movimientos o fue usado en servicios, será <strong>desactivado</strong> en lugar de eliminado permanentemente.
+                        </p>
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                        <button
+                            onClick={() => setConfirmarEliminar(null)}
+                            className="h-9 px-4 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={() => {
+                                mutacionEliminar.mutate(confirmarEliminar.id_producto)
+                                setConfirmarEliminar(null)
+                            }}
+                            disabled={mutacionEliminar.isPending}
+                            className="h-9 px-4 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg disabled:opacity-60"
+                        >
+                            {mutacionEliminar.isPending ? 'Eliminando...' : 'Sí, eliminar'}
+                        </button>
+                    </div>
+                </div>
             </Modal>
         </div>
     )

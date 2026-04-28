@@ -9,4 +9,6 @@ export const neumaticosService = {
     registrarVenta: (data) => api.post('/ventas', data),
     obtenerQR: (id) => api.get(`/neumaticos/${id}/qr-imagen`),
     hojaDeVida: (codigo) => api.get(`/qr/${codigo}`),
+    actualizar: (id, data) => api.put(`/neumaticos/${id}`, data),
+    eliminar: (id) => api.delete(`/neumaticos/${id}`),
 }

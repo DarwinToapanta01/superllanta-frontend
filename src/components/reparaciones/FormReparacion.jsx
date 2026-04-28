@@ -4,7 +4,8 @@ import { clientesService } from '../../services/clientes'
 import { productosService } from '../../services/productos'
 import SelectorVehiculo from '../ui/SelectorVehiculo'
 import BuscadorCliente from '../ui/BuscadorCliente'
-import InputMedida from '../ui/InputMedida'
+import BuscadorMarca from '../ui/BuscadorMarca'
+import BuscadorMedida from '../ui/BuscadorMedida'
 import InputDOT from '../ui/InputDOT'
 import { Wrench, RefreshCw, Plus, X, ChevronDown } from 'lucide-react'
 
@@ -281,17 +282,20 @@ export default function FormReparacion({ onGuardar, cargando, onCancelar }) {
                         <div className="grid grid-cols-3 gap-2">
                             <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 mb-1">MARCA *</label>
-                                <input value={form.marca_neumatico}
-                                    onChange={e => set('marca_neumatico', e.target.value)}
-                                    placeholder="Ej: Michelin"
-                                    className={`w-full h-8 border rounded-lg px-2 text-xs focus:outline-none ${errores.marca_neumatico ? 'border-red-400' : 'border-gray-300'}`} />
+                                <BuscadorMarca
+                                    value={form.marca_neumatico}
+                                    onChange={v => set('marca_neumatico', v)}
+                                    error={errores.marca_neumatico}
+                                />
                                 {errores.marca_neumatico && <p className="text-[10px] text-red-500 mt-0.5">Requerido</p>}
                             </div>
                             <div>
                                 <label className="block text-[10px] font-semibold text-gray-500 mb-1">MEDIDA *</label>
-                                <InputMedida value={form.medida_neumatico}
+                                <BuscadorMedida
+                                    value={form.medida_neumatico}
                                     onChange={v => set('medida_neumatico', v)}
-                                    error={errores.medida_neumatico} />
+                                    error={errores.medida_neumatico}
+                                />
                                 {errores.medida_neumatico && <p className="text-[10px] text-red-500 mt-0.5">Requerido</p>}
                             </div>
                             <div>
