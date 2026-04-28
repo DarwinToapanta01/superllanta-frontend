@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { clientesService } from '../../services/clientes'
+import SelectorVehiculo from '../ui/SelectorVehiculo'
 import InputMedida from '../ui/InputMedida'
 import InputDOT from '../ui/InputDOT'
 import { Flame, Plus, X } from 'lucide-react'
@@ -17,6 +18,9 @@ export default function FormVulcanizado({ onGuardar, cargando, onCancelar }) {
     })
     const [detalles, setDetalles] = useState([detalleVacio()])
     const [errores, setErrores] = useState({})
+
+    const [idVehiculo, setIdVehiculo] = useState(null)
+    const [tipoClienteSeleccionado, setTipoClienteSeleccionado] = useState('individual')
 
     const { data: clientes = [] } = useQuery({
         queryKey: ['clientes'],
@@ -36,8 +40,10 @@ export default function FormVulcanizado({ onGuardar, cargando, onCancelar }) {
 
     const handleClienteChange = (id) => {
         setForm_('id_cliente', id)
-        // Limpiar neumáticos al cambiar cliente
         setDetalles([detalleVacio()])
+        setIdVehiculo(null)
+        const cliente = clientes.find(c => c.id_cliente === parseInt(id))
+        setTipoClienteSeleccionado(cliente?.tipo_cliente || 'individual')
     }
 
     const setDetalle = (i, k, v) => {
@@ -102,6 +108,7 @@ export default function FormVulcanizado({ onGuardar, cargando, onCancelar }) {
         if (Object.keys(e2).length > 0) { setErrores(e2); return }
         onGuardar({
             id_cliente: parseInt(form.id_cliente),
+            id_vehiculo: idVehiculo || null,
             fecha_entrega_estimada: form.fecha_entrega_estimada || null,
             abono: parseFloat(form.abono) || 0,
             observaciones: form.observaciones || null,
@@ -142,6 +149,15 @@ export default function FormVulcanizado({ onGuardar, cargando, onCancelar }) {
                         className="w-full h-9 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:border-[#2563A8]" />
                 </div>
             </div>
+
+            {/* Selector de vehículo */}
+            <SelectorVehiculo
+                idCliente={form.id_cliente}
+                tipoCliente={tipoClienteSeleccionado}
+                idVehiculo={idVehiculo}
+                onChange={setIdVehiculo}
+                error={errores.idVehiculo}
+            />
 
             {/* Neumáticos */}
             <div>

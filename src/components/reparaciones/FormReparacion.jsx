@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { clientesService } from '../../services/clientes'
 import { productosService } from '../../services/productos'
+import SelectorVehiculo from '../ui/SelectorVehiculo'
 import InputMedida from '../ui/InputMedida'
 import InputDOT from '../ui/InputDOT'
 import { Wrench, RefreshCw, Plus, X, ChevronDown } from 'lucide-react'
@@ -24,6 +25,9 @@ export default function FormReparacion({ onGuardar, cargando, onCancelar }) {
     const [cantidadCambios, setCantidadCambios] = useState(1)
     const [precioCambio, setPrecioCambio] = useState('')
     const [errores, setErrores] = useState({})
+
+    const [idVehiculo, setIdVehiculo] = useState(null)
+    const [tipoClienteSeleccionado, setTipoClienteSeleccionado] = useState('individual')
 
     const { data: clientes = [] } = useQuery({
         queryKey: ['clientes'],
@@ -73,6 +77,11 @@ export default function FormReparacion({ onGuardar, cargando, onCancelar }) {
         set('id_cliente', id)
         limpiarNeumatico()
         setModoNeumatico('existente')
+        setIdVehiculo(null)
+        // Buscar tipo de cliente
+        const cliente = clientes.find(c => c.id_cliente === parseInt(id))
+        setTipoClienteSeleccionado(cliente?.tipo_cliente || 'individual')
+        setModoNeumatico('existente')
     }
 
     const agregarInsumo = () => setInsumos(i => [...i, { id_producto: '', cantidad: 1 }])
@@ -113,6 +122,7 @@ export default function FormReparacion({ onGuardar, cargando, onCancelar }) {
 
         onGuardar({
             id_cliente: parseInt(form.id_cliente),
+            id_vehiculo: idVehiculo || null,
             id_neumatico: form.id_neumatico || null,
             tipo_reparacion: tipo,
             marca_neumatico: tipo === 'arreglo' ? form.marca_neumatico : null,
@@ -177,6 +187,15 @@ export default function FormReparacion({ onGuardar, cargando, onCancelar }) {
                 </select>
                 {errores.id_cliente && <p className="text-[10px] text-red-500 mt-1">{errores.id_cliente}</p>}
             </div>
+            
+            {/* Selector de vehículo — aparece solo si el cliente es empresa */}
+            <SelectorVehiculo
+                idCliente={form.id_cliente}
+                tipoCliente={tipoClienteSeleccionado}
+                idVehiculo={idVehiculo}
+                onChange={setIdVehiculo}
+                error={errores.idVehiculo}
+            />
 
             {/* Selector de neumático — solo para arreglos */}
             {tipo === 'arreglo' && form.id_cliente && (
@@ -222,8 +241,8 @@ export default function FormReparacion({ onGuardar, cargando, onCancelar }) {
                                         <div key={neu.id_neumatico}
                                             onClick={() => seleccionarNeumatico(neu)}
                                             className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-all ${form.id_neumatico === neu.id_neumatico
-                                                    ? 'border-[#1C3F6E] bg-blue-50'
-                                                    : 'border-gray-200 bg-white hover:border-[#2563A8]'
+                                                ? 'border-[#1C3F6E] bg-blue-50'
+                                                : 'border-gray-200 bg-white hover:border-[#2563A8]'
                                                 }`}>
                                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${form.id_neumatico === neu.id_neumatico ? 'bg-[#1C3F6E]' : 'bg-gray-100'
                                                 }`}>

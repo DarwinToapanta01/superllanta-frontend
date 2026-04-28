@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { clientesService } from '../../services/clientes'
+import SelectorVehiculo from '../ui/SelectorVehiculo'
 import InputMedida from '../ui/InputMedida'
 import InputDOT from '../ui/InputDOT'
 
@@ -17,6 +18,9 @@ export default function FormReencauche({ onGuardar, cargando, onCancelar }) {
     })
     const [detalles, setDetalles] = useState([detalleVacio()])
     const [errores, setErrores] = useState({})
+
+    const [idVehiculo, setIdVehiculo] = useState(null)
+    const [tipoClienteSeleccionado, setTipoClienteSeleccionado] = useState('individual')
 
     const { data: clientes = [] } = useQuery({
         queryKey: ['clientes'],
@@ -58,6 +62,7 @@ export default function FormReencauche({ onGuardar, cargando, onCancelar }) {
         if (Object.keys(e2).length > 0) { setErrores(e2); return }
         onGuardar({
             id_cliente: parseInt(form.id_cliente),
+            id_vehiculo: idVehiculo || null,
             fecha_entrega_estimada: form.fecha_entrega_estimada || null,
             abono: parseFloat(form.abono) || 0,
             observaciones: form.observaciones || null,
@@ -72,7 +77,12 @@ export default function FormReencauche({ onGuardar, cargando, onCancelar }) {
             <div className="grid grid-cols-2 gap-3">
                 <div>
                     <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">Cliente *</label>
-                    <select value={form.id_cliente} onChange={e => set('id_cliente', e.target.value)}
+                    <select value={form.id_cliente} onChange={e => {
+                        set('id_cliente', e.target.value)
+                        setIdVehiculo(null)
+                        const cliente = clientes.find(c => c.id_cliente === parseInt(e.target.value))
+                        setTipoClienteSeleccionado(cliente?.tipo_cliente || 'individual')
+                    }}
                         className={`w-full h-9 border rounded-lg px-3 text-sm focus:outline-none focus:border-[#2563A8] ${errores.id_cliente ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}>
                         <option value="">Selecciona un cliente</option>
                         {clientes.map(c => (
@@ -89,6 +99,14 @@ export default function FormReencauche({ onGuardar, cargando, onCancelar }) {
                         className="w-full h-9 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:border-[#2563A8]" />
                 </div>
             </div>
+
+            <SelectorVehiculo
+                idCliente={form.id_cliente}
+                tipoCliente={tipoClienteSeleccionado}
+                idVehiculo={idVehiculo}
+                onChange={setIdVehiculo}
+                error={errores.idVehiculo}
+            />
 
             {/* Neumáticos */}
             <div>
