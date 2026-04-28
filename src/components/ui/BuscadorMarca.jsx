@@ -1,20 +1,23 @@
 import { useState, useRef, useEffect } from 'react'
-import { Search } from 'lucide-react'
-
-const MARCAS_NEUMATICO = [
-    'Michelin', 'Bridgestone', 'Goodyear', 'Continental', 'Pirelli',
-    'Dunlop', 'Hankook', 'Yokohama', 'Firestone', 'BFGoodrich',
-    'Toyo', 'Kumho', 'Falken', 'Nitto', 'Cooper',
-    'General', 'Lasso', 'Fate', 'Semperit', 'Uniroyal',
-    'Maxxis', 'Leao', 'Triangle', 'Linglong', 'Sailun',
-    'Roadstone', 'Nexen', 'Atlas', 'Westlake', 'Doublestar',
-    'Double Coin', 'Warrior', 'Boto', 'Giti', 'Arisun'
-]
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Search, Plus } from 'lucide-react'
+import api from '../../services/api'
 
 export default function BuscadorMarca({ value, onChange, error, placeholder = 'Ej: Michelin' }) {
+    const queryClient = useQueryClient()
     const [busqueda, setBusqueda] = useState(value || '')
     const [abierto, setAbierto] = useState(false)
     const ref = useRef(null)
+
+    const { data: marcas = [] } = useQuery({
+        queryKey: ['marcas'],
+        queryFn: () => api.get('/marcas').then(r => r.data)
+    })
+
+    const mutacionGuardar = useMutation({
+        mutationFn: (nombre) => api.post('/marcas', { nombre }),
+        onSuccess: () => queryClient.invalidateQueries(['marcas'])
+    })
 
     useEffect(() => {
         setBusqueda(value || '')
@@ -28,9 +31,12 @@ export default function BuscadorMarca({ value, onChange, error, placeholder = 'E
         return () => document.removeEventListener('mousedown', handler)
     }, [])
 
-    const marcasFiltradas = busqueda.length === 0 ? [] : MARCAS_NEUMATICO.filter(m =>
+    const marcasFiltradas = busqueda.length === 0 ? [] : marcas.filter(m =>
         m.toLowerCase().includes(busqueda.toLowerCase())
     ).slice(0, 6)
+
+    const esNueva = busqueda.trim() &&
+        !marcas.some(m => m.toLowerCase() === busqueda.toLowerCase().trim())
 
     const seleccionar = (marca) => {
         setBusqueda(marca)
@@ -38,10 +44,16 @@ export default function BuscadorMarca({ value, onChange, error, placeholder = 'E
         setAbierto(false)
     }
 
+    const seleccionarNueva = () => {
+        const nombre = busqueda.trim()
+        mutacionGuardar.mutate(nombre)
+        seleccionar(nombre)
+    }
+
     const handleChange = (e) => {
         const val = e.target.value
         setBusqueda(val)
-        onChange(val) // permite escribir libremente también
+        onChange(val)
         setAbierto(true)
     }
 
@@ -59,9 +71,9 @@ export default function BuscadorMarca({ value, onChange, error, placeholder = 'E
                 />
             </div>
 
-            {/* Dropdown */}
-            {abierto && marcasFiltradas.length > 0 && (
+            {abierto && (marcasFiltradas.length > 0 || esNueva) && (
                 <div className="absolute z-50 top-full mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+                    {/* Marcas existentes */}
                     {marcasFiltradas.map(m => (
                         <div key={m}
                             onMouseDown={() => seleccionar(m)}
@@ -69,14 +81,23 @@ export default function BuscadorMarca({ value, onChange, error, placeholder = 'E
                             {m}
                         </div>
                     ))}
-                    {/* Opción de usar texto libre si no coincide exacto */}
-                    {!MARCAS_NEUMATICO.includes(busqueda) && busqueda.trim() && (
+
+                    {/* Opción de guardar nueva marca */}
+                    {esNueva && (
                         <div
-                            onMouseDown={() => seleccionar(busqueda)}
-                            className="px-3 py-2 text-xs text-[#2563A8] hover:bg-blue-50 cursor-pointer border-t border-gray-100">
-                            Usar "<strong>{busqueda}</strong>" como marca nueva
+                            onMouseDown={seleccionarNueva}
+                            className="px-3 py-2 text-xs text-[#2563A8] hover:bg-blue-50 cursor-pointer border-t border-gray-100 flex items-center gap-2">
+                            <Plus size={11} />
+                            <span>Guardar "<strong>{busqueda.trim()}</strong>" como nueva marca</span>
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* Sin resultados */}
+            {abierto && busqueda.length > 0 && marcasFiltradas.length === 0 && !esNueva && (
+                <div className="absolute z-50 top-full mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg px-3 py-2 text-xs text-gray-400">
+                    No se encontraron marcas
                 </div>
             )}
         </div>
