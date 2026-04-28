@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { clientesService } from '../../services/clientes'
 import SelectorVehiculo from '../ui/SelectorVehiculo'
 import InputMedida from '../ui/InputMedida'
+import BuscadorCliente from '../ui/BuscadorCliente'
 import InputDOT from '../ui/InputDOT'
 import { Flame, Plus, X } from 'lucide-react'
 
@@ -125,18 +126,16 @@ export default function FormVulcanizado({ onGuardar, cargando, onCancelar }) {
             {/* Cliente y fecha */}
             <div className="grid grid-cols-2 gap-3">
                 <div>
-                    <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">
-                        Cliente *
-                    </label>
-                    <select value={form.id_cliente} onChange={e => handleClienteChange(e.target.value)}
-                        className={`w-full h-9 border rounded-lg px-3 text-sm focus:outline-none focus:border-[#2563A8] ${errores.id_cliente ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}>
-                        <option value="">Selecciona un cliente</option>
-                        {clientes.map(c => (
-                            <option key={c.id_cliente} value={c.id_cliente}>
-                                {c.nombre} {c.apellido || ''}
-                            </option>
-                        ))}
-                    </select>
+                    <div>
+                        <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">
+                            Cliente *
+                        </label>
+                        <BuscadorCliente
+                            idCliente={form.id_cliente}
+                            onChange={(id) => handleClienteChange(id)}
+                            error={errores.id_cliente}
+                        />
+                    </div>
                     {errores.id_cliente && <p className="text-[10px] text-red-500 mt-1">{errores.id_cliente}</p>}
                 </div>
                 <div>

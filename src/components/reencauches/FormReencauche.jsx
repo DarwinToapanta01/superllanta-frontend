@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { clientesService } from '../../services/clientes'
 import SelectorVehiculo from '../ui/SelectorVehiculo'
+import BuscadorCliente from '../ui/BuscadorCliente'
 import InputMedida from '../ui/InputMedida'
 import InputDOT from '../ui/InputDOT'
 
@@ -76,19 +77,21 @@ export default function FormReencauche({ onGuardar, cargando, onCancelar }) {
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
                 <div>
-                    <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">Cliente *</label>
-                    <select value={form.id_cliente} onChange={e => {
-                        set('id_cliente', e.target.value)
-                        setIdVehiculo(null)
-                        const cliente = clientes.find(c => c.id_cliente === parseInt(e.target.value))
-                        setTipoClienteSeleccionado(cliente?.tipo_cliente || 'individual')
-                    }}
-                        className={`w-full h-9 border rounded-lg px-3 text-sm focus:outline-none focus:border-[#2563A8] ${errores.id_cliente ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}>
-                        <option value="">Selecciona un cliente</option>
-                        {clientes.map(c => (
-                            <option key={c.id_cliente} value={c.id_cliente}>{c.nombre} {c.apellido || ''}</option>
-                        ))}
-                    </select>
+                    <div>
+                        <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">
+                            Cliente *
+                        </label>
+                        <BuscadorCliente
+                            idCliente={form.id_cliente}
+                            onChange={(id) => {
+                                set('id_cliente', id)
+                                setIdVehiculo(null)
+                                const cliente = clientes.find(c => c.id_cliente === parseInt(id))
+                                setTipoClienteSeleccionado(cliente?.tipo_cliente || 'individual')
+                            }}
+                            error={errores.id_cliente}
+                        />
+                    </div>
                     {errores.id_cliente && <p className="text-[10px] text-red-500 mt-1">{errores.id_cliente}</p>}
                 </div>
                 <div>
