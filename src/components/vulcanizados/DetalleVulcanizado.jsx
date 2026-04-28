@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Badge from '../ui/Badge'
-import { Phone, Flame, FileText, Clock } from 'lucide-react'
+import { Phone, Flame, FileText, Clock, Truck } from 'lucide-react'
 
 const ESTADOS = {
     pendiente: { label: 'Pendiente', variante: 'warning' },

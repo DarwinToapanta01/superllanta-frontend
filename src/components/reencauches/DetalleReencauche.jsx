@@ -1,5 +1,5 @@
 import Badge from '../ui/Badge'
-import { Phone, RefreshCw, FileText, Clock } from 'lucide-react'
+import { Phone, RefreshCw, FileText, Clock, Truck } from 'lucide-react'
 
 const ESTADOS = {
     pendiente: { label: 'Pendiente', variante: 'gray' },
@@ -88,23 +88,23 @@ export default function DetalleReencauche({ reencauche: r, onCambiarEstado, carg
             </div>
 
             {/* Vehículo y chofer */}
-            {(v.placa_vehiculo || v.chofer_servicio) && (
-                <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-3">
+            {(r.placa_vehiculo || r.chofer_servicio) && (
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
                     <div className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide mb-2 flex items-center gap-1">
                         <Truck size={11} />
-                        Vehículo del servicio
+                        <span>Vehículo del servicio</span>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                        {v.placa_vehiculo && (
+                        {r.placa_vehiculo && (
                             <div>
                                 <div className="text-[10px] text-gray-500">Placa</div>
-                                <div className="text-xs font-mono font-bold text-[#1A2332]">{v.placa_vehiculo}</div>
+                                <div className="text-xs font-mono font-bold text-[#1A2332]">{r.placa_vehiculo}</div>
                             </div>
                         )}
-                        {v.chofer_servicio && (
+                        {r.chofer_servicio && (
                             <div>
                                 <div className="text-[10px] text-gray-500">Chofer responsable</div>
-                                <div className="text-xs font-semibold text-[#1A2332]">{v.chofer_servicio}</div>
+                                <div className="text-xs font-semibold text-[#1A2332]">{r.chofer_servicio}</div>
                             </div>
                         )}
                     </div>
