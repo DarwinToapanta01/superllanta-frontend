@@ -202,6 +202,85 @@ export default function Neumaticos() {
                 </>
             )}
 
+            {tab === 'ventas' && (
+                <div className="space-y-4">
+                    {/* Filtro por cliente */}
+                    <div className="bg-white border border-gray-200 rounded-xl p-4">
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                            Filtrar por cliente
+                        </label>
+                        <BuscadorCliente
+                            idCliente={filtroCliente}
+                            onChange={setFiltroCliente}
+                            placeholder="Buscar cliente para ver sus compras..."
+                        />
+                    </div>
+
+                    {/* Lista de ventas */}
+                    {cargandoVentas ? <Spinner /> : ventas.length === 0 ? (
+                        <div className="bg-white border border-gray-200 rounded-xl p-10 text-center text-sm text-gray-400">
+                            {filtroCliente ? 'Este cliente no tiene compras registradas' : 'No hay ventas registradas'}
+                        </div>
+                    ) : (
+                        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="bg-gray-50 border-b border-gray-200">
+                                        {['Fecha', 'Cliente', 'Neumático', 'Medida', 'DOT', 'Método pago', 'Total', 'Estado llanta'].map(h => (
+                                            <th key={h} className="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {ventas.map((v, i) => (
+                                        v.detalles.map((d, j) => (
+                                            <tr key={`${v.id_venta}-${j}`} className={`border-b border-gray-100 hover:bg-gray-50 ${i % 2 === 0 ? '' : 'bg-gray-50/30'}`}>
+                                                <td className="px-4 py-3 text-xs text-gray-500">
+                                                    {new Date(v.fecha).toLocaleDateString('es-EC')}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div className="text-xs font-medium text-[#1A2332]">
+                                                        {v.cliente?.tipo_cliente === 'empresa'
+                                                            ? v.cliente?.nombre_empresa
+                                                            : `${v.cliente?.nombre} ${v.cliente?.apellido || ''}`
+                                                        }
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 font-medium text-[#1A2332] text-xs">
+                                                    {d.neumatico?.marca}
+                                                </td>
+                                                <td className="px-4 py-3 text-xs text-gray-600 font-mono">
+                                                    {d.neumatico?.medida}
+                                                </td>
+                                                <td className="px-4 py-3 text-xs text-gray-500 font-mono">
+                                                    {d.neumatico?.dot || '—'}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${v.metodo_pago === 'Efectivo' ? 'bg-green-100 text-green-700'
+                                                            : v.metodo_pago === 'Transferencia' ? 'bg-blue-100 text-blue-700'
+                                                                : 'bg-purple-100 text-purple-700'
+                                                        }`}>
+                                                        {v.metodo_pago || 'Efectivo'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 font-semibold text-[#1C3F6E] text-xs">
+                                                    ${parseFloat(d.precio || 0).toFixed(2)}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <Badge variante={d.neumatico?.estado === 'vendido' ? 'gray' : 'success'}>
+                                                        {d.neumatico?.estado || '—'}
+                                                    </Badge>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Modal ingresar / editar */}
             <Modal abierto={modalForm}
                 onCerrar={() => { setModalForm(false); setEditando(null) }}
