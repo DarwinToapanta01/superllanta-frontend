@@ -47,14 +47,14 @@ export default function DetalleReencauche({ reencauche: r, onCambiarEstado, carg
                     <div key={paso} className="flex items-center flex-1">
                         <div className="flex flex-col items-center flex-1">
                             <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border-2 ${i < pasoActual ? 'bg-green-500 border-green-500 text-white'
-                                    : i === pasoActual ? 'bg-[#F5C400] border-[#F5C400] text-[#1A2332]'
-                                        : 'bg-white border-gray-300 text-gray-400'
+                                : i === pasoActual ? 'bg-[#F5C400] border-[#F5C400] text-[#1A2332]'
+                                    : 'bg-white border-gray-300 text-gray-400'
                                 }`}>
                                 {i < pasoActual ? '✓' : i + 1}
                             </div>
                             <div className={`text-[9px] mt-1 font-medium capitalize ${i === pasoActual ? 'text-[#E67E22]'
-                                    : i < pasoActual ? 'text-green-600'
-                                        : 'text-gray-400'
+                                : i < pasoActual ? 'text-green-600'
+                                    : 'text-gray-400'
                                 }`}>
                                 {paso.replace('_', ' ')}
                             </div>
@@ -86,6 +86,30 @@ export default function DetalleReencauche({ reencauche: r, onCambiarEstado, carg
                     )}
                 </div>
             </div>
+
+            {/* Vehículo y chofer */}
+            {(v.placa_vehiculo || v.chofer_servicio) && (
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-3">
+                    <div className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide mb-2 flex items-center gap-1">
+                        <Truck size={11} />
+                        Vehículo del servicio
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        {v.placa_vehiculo && (
+                            <div>
+                                <div className="text-[10px] text-gray-500">Placa</div>
+                                <div className="text-xs font-mono font-bold text-[#1A2332]">{v.placa_vehiculo}</div>
+                            </div>
+                        )}
+                        {v.chofer_servicio && (
+                            <div>
+                                <div className="text-[10px] text-gray-500">Chofer responsable</div>
+                                <div className="text-xs font-semibold text-[#1A2332]">{v.chofer_servicio}</div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Neumáticos */}
             <div>

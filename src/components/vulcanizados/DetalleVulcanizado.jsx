@@ -94,6 +94,30 @@ export default function DetalleVulcanizado({ vulcanizado: v, onCambiarEstado, on
                 </div>
             </div>
 
+            {/* Vehículo y chofer */}
+            {(v.placa_vehiculo || v.chofer_servicio) && (
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-3">
+                    <div className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide mb-2 flex items-center gap-1">
+                        <Truck size={11} />
+                        Vehículo del servicio
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        {v.placa_vehiculo && (
+                            <div>
+                                <div className="text-[10px] text-gray-500">Placa</div>
+                                <div className="text-xs font-mono font-bold text-[#1A2332]">{v.placa_vehiculo}</div>
+                            </div>
+                        )}
+                        {v.chofer_servicio && (
+                            <div>
+                                <div className="text-[10px] text-gray-500">Chofer responsable</div>
+                                <div className="text-xs font-semibold text-[#1A2332]">{v.chofer_servicio}</div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
             {/* Neumáticos */}
             <div>
                 <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Neumáticos</div>
