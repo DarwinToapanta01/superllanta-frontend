@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { dashboardService } from '../services/dashboard'
 import { useAuth } from '../context/AuthContext'
+import GraficaTendencias from '../components/dashboard/GraficaTendencias'
 import Spinner from '../components/ui/Spinner'
 import {
     Flame, RefreshCw, Wrench, Users, QrCode,
@@ -247,8 +248,8 @@ export default function Dashboard() {
                                     </div>
                                     <div className="text-[10px] text-gray-400 flex items-center gap-2 mt-0.5">
                                         <span className={`capitalize px-1.5 py-0.5 rounded-full text-[9px] font-medium ${v.estado === 'entregado' ? 'bg-green-100 text-green-600'
-                                                : v.estado === 'listo' ? 'bg-blue-100 text-blue-600'
-                                                    : 'bg-orange-100 text-orange-600'
+                                            : v.estado === 'listo' ? 'bg-blue-100 text-blue-600'
+                                                : 'bg-orange-100 text-orange-600'
                                             }`}>{v.estado}</span>
                                         <span>{fmtFecha(v.fecha_ingreso)}</span>
                                     </div>
@@ -268,6 +269,7 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
+            <GraficaTendencias />
         </div>
     )
 }
