@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { clientesService } from '../services/clientes'
-import { Phone, MapPin } from 'lucide-react'
+import { Phone, MapPin, User, Building2 } from 'lucide-react'
 import Modal from '../components/ui/Modal'
 import Spinner from '../components/ui/Spinner'
 import Toast from '../components/ui/Toast'
 import useToast from '../hooks/useToast'
 import FormCliente from '../components/clientes/FormCliente'
+import VehiculosCliente from '../components/clientes/VehiculosCliente'
 
 export default function Clientes() {
     const queryClient = useQueryClient()
@@ -34,14 +35,19 @@ export default function Clientes() {
     })
 
     const clientesFiltrados = clientes.filter(c => {
-        const texto = `${c.nombre} ${c.apellido || ''} ${c.cedula || ''}`.toLowerCase()
+        const texto = `${c.nombre} ${c.apellido || ''} ${c.cedula || ''} ${c.nombre_empresa || ''}`.toLowerCase()
         return texto.includes(buscar.toLowerCase())
     })
 
     const abrirNuevo = () => { setClienteSeleccionado(null); setModalForm(true) }
     const abrirEditar = (c) => { setClienteSeleccionado(c); setModalForm(true) }
 
-    const iniciales = (c) => `${c.nombre?.[0] || ''}${c.apellido?.[0] || ''}`.toUpperCase()
+    const iniciales = (c) => {
+        if (c.tipo_cliente === 'empresa' && c.nombre_empresa) {
+            return c.nombre_empresa.substring(0, 2).toUpperCase()
+        }
+        return `${c.nombre?.[0] || ''}${c.apellido?.[0] || ''}`.toUpperCase()
+    }
 
     return (
         <div>
@@ -52,7 +58,7 @@ export default function Clientes() {
                 <input
                     value={buscar}
                     onChange={e => setBuscar(e.target.value)}
-                    placeholder="Buscar por nombre, apellido o cédula..."
+                    placeholder="Buscar por nombre, empresa, apellido o cédula..."
                     className="flex-1 h-9 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:border-[#2563A8]"
                 />
                 <button
@@ -73,17 +79,53 @@ export default function Clientes() {
                     ) : (
                         <div className="grid grid-cols-3 gap-4">
                             {clientesFiltrados.map(c => (
-                                <div key={c.id_cliente} className="bg-white border border-gray-200 rounded-xl p-4 hover:border-[#1C3F6E] transition-colors">
+                                <div key={c.id_cliente}
+                                    className={`bg-white border rounded-xl p-4 hover:border-[#1C3F6E] transition-colors ${c.tipo_cliente === 'empresa' ? 'border-orange-200' : 'border-gray-200'
+                                        }`}>
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-10 h-10 rounded-full bg-[#E8F0FB] flex items-center justify-center text-sm font-bold text-[#1C3F6E] flex-shrink-0">
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${c.tipo_cliente === 'empresa'
+                                                ? 'bg-orange-100 text-orange-700'
+                                                : 'bg-[#E8F0FB] text-[#1C3F6E]'
+                                            }`}>
                                             {iniciales(c)}
                                         </div>
-                                        <div>
-                                            <div className="text-sm font-semibold text-[#1A2332]">{c.nombre} {c.apellido || ''}</div>
-                                            <div className="text-[10px] text-gray-500">{c.cedula ? `CI/RUC: ${c.cedula}` : 'Sin cédula registrada'}</div>
+                                        <div className="min-w-0 flex-1">
+                                            {/* Nombre principal */}
+                                            <div className="text-sm font-semibold text-[#1A2332] truncate">
+                                                {c.tipo_cliente === 'empresa'
+                                                    ? <span>{c.nombre_empresa}</span>
+                                                    : <span>{c.nombre} {c.apellido || ''}</span>
+                                                }
+                                            </div>
+                                            {/* Contacto para empresas */}
+                                            {c.tipo_cliente === 'empresa' && (
+                                                <div className="text-[10px] text-gray-500 truncate">
+                                                    Contacto: {c.nombre} {c.apellido || ''}
+                                                </div>
+                                            )}
+                                            {/* Badge tipo */}
+                                            <div className="mt-0.5">
+                                                {c.tipo_cliente === 'empresa' ? (
+                                                    <span className="text-[9px] bg-orange-50 text-orange-600 border border-orange-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                                                        <Building2 size={8} />
+                                                        <span>Empresa / Flota</span>
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[9px] bg-blue-50 text-[#1C3F6E] border border-blue-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                                                        <User size={8} />
+                                                        <span>Individual</span>
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
+
                                     <div className="space-y-1 mb-3">
+                                        {c.cedula && (
+                                            <div className="text-[10px] text-gray-500">
+                                                {c.cedula.length === 13 ? 'RUC' : 'CI'}: {c.cedula}
+                                            </div>
+                                        )}
                                         {c.telefono && (
                                             <div className="flex items-center gap-2 text-xs text-gray-500">
                                                 <Phone size={11} className="flex-shrink-0" />
@@ -97,6 +139,7 @@ export default function Clientes() {
                                             </div>
                                         )}
                                     </div>
+
                                     <div className="flex gap-2 border-t border-gray-100 pt-3">
                                         <button
                                             onClick={() => abrirEditar(c)}
@@ -112,10 +155,12 @@ export default function Clientes() {
                 </>
             )}
 
+            {/* Modal — incluye vehículos si es empresa */}
             <Modal
                 abierto={modalForm}
                 onCerrar={() => { setModalForm(false); setClienteSeleccionado(null) }}
                 titulo={clienteSeleccionado ? 'Editar cliente' : 'Nuevo cliente'}
+                ancho="max-w-xl"
             >
                 <FormCliente
                     cliente={clienteSeleccionado}
@@ -123,6 +168,12 @@ export default function Clientes() {
                     cargando={mutacion.isPending}
                     onCancelar={() => { setModalForm(false); setClienteSeleccionado(null) }}
                 />
+                {/* Vehículos — solo visible al editar una empresa */}
+                {clienteSeleccionado?.tipo_cliente === 'empresa' && (
+                    <div className="mt-4 border-t border-gray-100 pt-4">
+                        <VehiculosCliente idCliente={clienteSeleccionado.id_cliente} />
+                    </div>
+                )}
             </Modal>
         </div>
     )

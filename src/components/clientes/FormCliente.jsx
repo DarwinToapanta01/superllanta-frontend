@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { User, Building2 } from 'lucide-react'
 
 const CIUDADES_ECUADOR = [
     'Quito', 'Guayaquil', 'Cuenca', 'Santo Domingo', 'Machala',
@@ -10,7 +11,6 @@ const CIUDADES_ECUADOR = [
     'Santa Rosa', 'Huaquillas', 'Chone', 'Bahía de Caráquez',
 ]
 
-// Valida cédula ecuatoriana (10 dígitos con algoritmo de verificación)
 const validarCedula = (cedula) => {
     if (!/^\d{10}$/.test(cedula)) return false
     const provincia = parseInt(cedula.substring(0, 2))
@@ -28,7 +28,6 @@ const validarCedula = (cedula) => {
     return digitoCalculado === verificador
 }
 
-// Valida RUC ecuatoriano (13 dígitos)
 const validarRUC = (ruc) => {
     if (!/^\d{13}$/.test(ruc)) return false
     const tipo = parseInt(ruc.substring(2, 3))
@@ -36,27 +35,27 @@ const validarRUC = (ruc) => {
     return ruc.endsWith('001')
 }
 
-// Valida teléfono/celular ecuatoriano
 const validarTelefono = (tel) => {
     const limpio = tel.replace(/[\s\-]/g, '')
-    // Celular: 09XXXXXXXX (10 dígitos)
-    // Convencional: 0X-XXXXXXX (9 dígitos con código de área)
     return /^(09\d{8}|0[2-7]\d{7})$/.test(limpio)
 }
 
 export default function FormCliente({ cliente, onGuardar, cargando, onCancelar }) {
     const [form, setForm] = useState({
+        tipo_cliente: 'individual',
+        nombre_empresa: '',
         nombre: '', apellido: '', telefono: '', cedula: '', ciudad: '', direccion: ''
     })
     const [errores, setErrores] = useState({})
-    const [tipoCedula, setTipoCedula] = useState('cedula') // 'cedula' | 'ruc'
+    const [tipoCedula, setTipoCedula] = useState('cedula')
 
     useEffect(() => {
         if (cliente) {
-            // Detectar si es RUC o cédula según longitud
             const esRuc = cliente.cedula?.length === 13
             setTipoCedula(esRuc ? 'ruc' : 'cedula')
             setForm({
+                tipo_cliente: cliente.tipo_cliente || 'individual',
+                nombre_empresa: cliente.nombre_empresa || '',
                 nombre: cliente.nombre || '',
                 apellido: cliente.apellido || '',
                 telefono: cliente.telefono || '',
@@ -75,6 +74,10 @@ export default function FormCliente({ cliente, onGuardar, cargando, onCancelar }
     const validar = () => {
         const e = {}
 
+        if (form.tipo_cliente === 'empresa' && !form.nombre_empresa.trim()) {
+            e.nombre_empresa = 'El nombre de la empresa es requerido'
+        }
+
         if (!form.nombre.trim()) e.nombre = 'El nombre es requerido'
         else if (form.nombre.trim().length < 2) e.nombre = 'Mínimo 2 caracteres'
         else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.nombre)) e.nombre = 'Solo se permiten letras'
@@ -92,10 +95,8 @@ export default function FormCliente({ cliente, onGuardar, cargando, onCancelar }
             }
         }
 
-        if (form.telefono) {
-            if (!validarTelefono(form.telefono))
-                e.telefono = 'Teléfono inválido. Ej: 0991234567 (celular) o 022345678 (convencional)'
-        }
+        if (form.telefono && !validarTelefono(form.telefono))
+            e.telefono = 'Teléfono inválido. Ej: 0991234567 (celular) o 022345678 (convencional)'
 
         if (!form.ciudad) e.ciudad = 'Selecciona una ciudad'
 
@@ -110,6 +111,8 @@ export default function FormCliente({ cliente, onGuardar, cargando, onCancelar }
             ? `${form.ciudad}, ${form.direccion}`
             : form.ciudad
         onGuardar({
+            tipo_cliente: form.tipo_cliente,
+            nombre_empresa: form.tipo_cliente === 'empresa' ? form.nombre_empresa.trim() : null,
             nombre: form.nombre.trim(),
             apellido: form.apellido.trim() || null,
             telefono: form.telefono || null,
@@ -122,6 +125,48 @@ export default function FormCliente({ cliente, onGuardar, cargando, onCancelar }
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
+
+            {/* ── NUEVO: Selector tipo de cliente ── */}
+            <div>
+                <label className="block text-xs font-semibold text-[#1A2332] mb-2 uppercase tracking-wide">
+                    Tipo de cliente *
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                    <button type="button" onClick={() => set('tipo_cliente', 'individual')}
+                        className={`h-16 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all ${form.tipo_cliente === 'individual'
+                                ? 'border-[#1C3F6E] bg-blue-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}>
+                        <User size={18} className={form.tipo_cliente === 'individual' ? 'text-[#1C3F6E]' : 'text-gray-400'} />
+                        <span className="text-xs font-semibold text-[#1A2332]">Cliente individual</span>
+                        <span className="text-[10px] text-gray-500">Vehículo propio</span>
+                    </button>
+                    <button type="button" onClick={() => set('tipo_cliente', 'empresa')}
+                        className={`h-16 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all ${form.tipo_cliente === 'empresa'
+                                ? 'border-[#E67E22] bg-orange-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}>
+                        <Building2 size={18} className={form.tipo_cliente === 'empresa' ? 'text-[#E67E22]' : 'text-gray-400'} />
+                        <span className="text-xs font-semibold text-[#1A2332]">Empresa / Flota</span>
+                        <span className="text-[10px] text-gray-500">Múltiples vehículos</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* ── NUEVO: Nombre empresa — solo si es empresa ── */}
+            {form.tipo_cliente === 'empresa' && (
+                <div>
+                    <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">
+                        Nombre de la empresa *
+                    </label>
+                    <input value={form.nombre_empresa}
+                        onChange={e => set('nombre_empresa', e.target.value)}
+                        placeholder="Ej: Transportes El Dorado S.A."
+                        className={`w-full h-9 border rounded-lg px-3 text-sm focus:outline-none focus:border-[#2563A8] ${errores.nombre_empresa ? 'border-red-400 bg-red-50' : 'border-gray-300'}`} />
+                    {errores.nombre_empresa && <p className="text-[10px] text-red-500 mt-1">{errores.nombre_empresa}</p>}
+                </div>
+            )}
+
             {/* Vista previa */}
             {form.nombre && (
                 <div className="bg-[#1C3F6E] rounded-xl p-3 flex items-center gap-3">
@@ -129,22 +174,37 @@ export default function FormCliente({ cliente, onGuardar, cargando, onCancelar }
                         {iniciales}
                     </div>
                     <div>
-                        <div className="text-white text-sm font-semibold">{form.nombre} {form.apellido}</div>
-                        {form.cedula && <div className="text-white/50 text-xs">{tipoCedula === 'ruc' ? 'RUC' : 'CI'}: {form.cedula}</div>}
+                        <div className="text-white text-sm font-semibold">
+                            {form.tipo_cliente === 'empresa' && form.nombre_empresa
+                                ? <span>{form.nombre_empresa}</span>
+                                : <span>{form.nombre} {form.apellido}</span>
+                            }
+                        </div>
+                        {form.cedula && (
+                            <div className="text-white/50 text-xs">
+                                {tipoCedula === 'ruc' ? 'RUC' : 'CI'}: {form.cedula}
+                            </div>
+                        )}
                     </div>
+                    {form.tipo_cliente === 'empresa' && (
+                        <span className="ml-auto text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded-full">
+                            Empresa
+                        </span>
+                    )}
                 </div>
             )}
 
+            {/* Datos del contacto — igual que antes */}
             <div className="grid grid-cols-2 gap-3">
-                {/* Nombre */}
                 <div>
-                    <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">Nombre *</label>
+                    <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">
+                        {form.tipo_cliente === 'empresa' ? 'Nombre contacto *' : 'Nombre *'}
+                    </label>
                     <input value={form.nombre} onChange={e => set('nombre', e.target.value)} maxLength={100}
                         className={`w-full h-9 border rounded-lg px-3 text-sm focus:outline-none focus:border-[#2563A8] ${errores.nombre ? 'border-red-400 bg-red-50' : 'border-gray-300'}`} />
                     {errores.nombre && <p className="text-[10px] text-red-500 mt-1">{errores.nombre}</p>}
                 </div>
 
-                {/* Apellido */}
                 <div>
                     <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">Apellido</label>
                     <input value={form.apellido} onChange={e => set('apellido', e.target.value)} maxLength={100}
@@ -152,7 +212,6 @@ export default function FormCliente({ cliente, onGuardar, cargando, onCancelar }
                     {errores.apellido && <p className="text-[10px] text-red-500 mt-1">{errores.apellido}</p>}
                 </div>
 
-                {/* Tipo + Cédula/RUC */}
                 <div className="col-span-2">
                     <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">Identificación</label>
                     <div className="flex gap-2">
@@ -182,7 +241,6 @@ export default function FormCliente({ cliente, onGuardar, cargando, onCancelar }
                     }
                 </div>
 
-                {/* Teléfono */}
                 <div>
                     <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">Teléfono</label>
                     <input
@@ -198,7 +256,6 @@ export default function FormCliente({ cliente, onGuardar, cargando, onCancelar }
                     }
                 </div>
 
-                {/* Ciudad */}
                 <div>
                     <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">Ciudad *</label>
                     <select value={form.ciudad} onChange={e => set('ciudad', e.target.value)}
@@ -209,7 +266,6 @@ export default function FormCliente({ cliente, onGuardar, cargando, onCancelar }
                     {errores.ciudad && <p className="text-[10px] text-red-500 mt-1">{errores.ciudad}</p>}
                 </div>
 
-                {/* Dirección adicional */}
                 <div className="col-span-2">
                     <label className="block text-xs font-semibold text-[#1A2332] mb-1 uppercase tracking-wide">
                         Dirección <span className="text-gray-400 normal-case font-normal">(barrio, calle - opcional)</span>
