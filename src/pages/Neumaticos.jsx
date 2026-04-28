@@ -10,7 +10,8 @@ import BuscadorCliente from '../components/ui/BuscadorCliente'
 import BuscadorMarca from '../components/ui/BuscadorMarca'
 import BuscadorMedida from '../components/ui/BuscadorMedida'
 import InputDOT from '../components/ui/InputDOT'
-import { Plus, ShoppingCart, Edit2 } from 'lucide-react'
+import { ventasService } from '../services/ventas'
+import { Plus, ShoppingCart, Edit2, History } from 'lucide-react'
 
 export default function Neumaticos() {
     const queryClient = useQueryClient()
@@ -21,6 +22,14 @@ export default function Neumaticos() {
     const [editando, setEditando] = useState(null)
     const [buscar, setBuscar] = useState('')
     const [confirmarEliminar, setConfirmarEliminar] = useState(null)
+    const [tab, setTab] = useState('inventario')
+    const [filtroCliente, setFiltroCliente] = useState('')
+
+    const { data: ventas = [], isLoading: cargandoVentas } = useQuery({
+        queryKey: ['ventas', filtroCliente],
+        queryFn: () => ventasService.listar(filtroCliente ? { id_cliente: filtroCliente } : {}).then(r => r.data),
+        enabled: tab === 'ventas'
+    })
 
     const { data: neumaticos = [], isLoading } = useQuery({
         queryKey: ['neumaticos-venta'],
@@ -91,86 +100,106 @@ export default function Neumaticos() {
                 ))}
             </div>
 
-            {/* Toolbar */}
-            <div className="flex items-center gap-3 mb-4">
-                <input value={buscar} onChange={e => setBuscar(e.target.value)}
-                    placeholder="Buscar por marca, medida o DOT..."
-                    className="flex-1 h-9 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:border-[#2563A8]" />
-                <button onClick={() => { setEditando(null); setModalForm(true) }}
-                    className="h-9 bg-[#1C3F6E] hover:bg-[#2563A8] text-white text-sm font-semibold px-4 rounded-lg flex items-center gap-2">
-                    <Plus size={14} /> <span>Ingresar neumático</span>
-                </button>
+            {/* Tabs */}
+            <div className="flex gap-2 mb-4">
+                {[
+                    { id: 'inventario', label: 'Inventario', icon: Plus },
+                    { id: 'ventas', label: 'Historial de ventas', icon: History },
+                ].map(({ id, label, icon: Icon }) => (
+                    <button key={id} onClick={() => setTab(id)}
+                        className={`flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-medium transition-colors ${tab === id
+                            ? 'bg-[#1C3F6E] text-white'
+                            : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                            }`}>
+                        <Icon size={14} />
+                        <span>{label}</span>
+                    </button>
+                ))}
             </div>
+            {tab === 'inventario' && (
+                <>
+                    {/* Toolbar */}
+                    <div className="flex items-center gap-3 mb-4">
+                        <input value={buscar} onChange={e => setBuscar(e.target.value)}
+                            placeholder="Buscar por marca, medida o DOT..."
+                            className="flex-1 h-9 border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:border-[#2563A8]" />
+                        <button onClick={() => { setEditando(null); setModalForm(true) }}
+                            className="h-9 bg-[#1C3F6E] hover:bg-[#2563A8] text-white text-sm font-semibold px-4 rounded-lg flex items-center gap-2">
+                            <Plus size={14} /> <span>Ingresar neumático</span>
+                        </button>
+                    </div>
 
-            {/* Tabla */}
-            {isLoading ? <Spinner /> : (
-                <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="bg-gray-50 border-b border-gray-200">
-                                {['Marca', 'Medida', 'DOT', 'P. Compra', 'P. Venta', 'Estado', 'Ingreso', 'Acciones'].map(h => (
-                                    <th key={h} className="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtrados.length === 0 ? (
-                                <tr><td colSpan={8} className="text-center py-10 text-gray-400 text-sm">
-                                    No hay neumáticos en inventario
-                                </td></tr>
-                            ) : filtrados.map((n, i) => (
-                                <tr key={n.id_neumatico} className={`border-b border-gray-100 hover:bg-gray-50 ${i % 2 === 0 ? '' : 'bg-gray-50/30'}`}>
-                                    <td className="px-4 py-3 font-medium text-[#1A2332]">{n.marca}</td>
-                                    <td className="px-4 py-3 text-gray-600">{n.medida}</td>
-                                    <td className="px-4 py-3 font-mono text-xs text-gray-500">{n.dot || '—'}</td>
-                                    <td className="px-4 py-3 text-gray-500">
-                                        ${parseFloat(n.precio_compra || 0).toFixed(2)}
-                                    </td>
-                                    <td className="px-4 py-3 font-semibold text-[#1C3F6E]">
-                                        ${parseFloat(n.precio || 0).toFixed(2)}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <Badge variante={n.estado === 'disponible' ? 'success' : 'gray'}>
-                                            {n.estado === 'disponible' ? 'Disponible' : 'Vendido'}
-                                        </Badge>
-                                    </td>
-                                    <td className="px-4 py-3 text-xs text-gray-500">
-                                        {new Date(n.fecha_registro).toLocaleDateString('es-EC')}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex items-center gap-2">
-                                            {/* Editar — siempre disponible */}
-                                            <button onClick={() => abrirEditar(n)}
-                                                className="text-[#2563A8] text-xs hover:underline flex items-center gap-1">
-                                                <Edit2 size={11} /> <span>Editar</span>
-                                            </button>
-                                            {/* Vender — solo si disponible */}
-                                            {n.estado === 'disponible' && (
-                                                <>
-                                                    <span className="text-gray-300">|</span>
-                                                    <button onClick={() => { setSeleccionado(n); setModalVenta(true) }}
-                                                        className="flex items-center gap-1 text-xs text-green-600 hover:underline">
-                                                        <ShoppingCart size={11} /> <span>Vender</span>
+                    {/* Tabla */}
+                    {isLoading ? <Spinner /> : (
+                        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="bg-gray-50 border-b border-gray-200">
+                                        {['Marca', 'Medida', 'DOT', 'P. Compra', 'P. Venta', 'Estado', 'Ingreso', 'Acciones'].map(h => (
+                                            <th key={h} className="px-4 py-3 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filtrados.length === 0 ? (
+                                        <tr><td colSpan={8} className="text-center py-10 text-gray-400 text-sm">
+                                            No hay neumáticos en inventario
+                                        </td></tr>
+                                    ) : filtrados.map((n, i) => (
+                                        <tr key={n.id_neumatico} className={`border-b border-gray-100 hover:bg-gray-50 ${i % 2 === 0 ? '' : 'bg-gray-50/30'}`}>
+                                            <td className="px-4 py-3 font-medium text-[#1A2332]">{n.marca}</td>
+                                            <td className="px-4 py-3 text-gray-600">{n.medida}</td>
+                                            <td className="px-4 py-3 font-mono text-xs text-gray-500">{n.dot || '—'}</td>
+                                            <td className="px-4 py-3 text-gray-500">
+                                                ${parseFloat(n.precio_compra || 0).toFixed(2)}
+                                            </td>
+                                            <td className="px-4 py-3 font-semibold text-[#1C3F6E]">
+                                                ${parseFloat(n.precio || 0).toFixed(2)}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <Badge variante={n.estado === 'disponible' ? 'success' : 'gray'}>
+                                                    {n.estado === 'disponible' ? 'Disponible' : 'Vendido'}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-4 py-3 text-xs text-gray-500">
+                                                {new Date(n.fecha_registro).toLocaleDateString('es-EC')}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <div className="flex items-center gap-2">
+                                                    {/* Editar — siempre disponible */}
+                                                    <button onClick={() => abrirEditar(n)}
+                                                        className="text-[#2563A8] text-xs hover:underline flex items-center gap-1">
+                                                        <Edit2 size={11} /> <span>Editar</span>
                                                     </button>
-                                                </>
-                                            )}
-                                            {/* Eliminar — solo si disponible (no vendido) */}
-                                            {n.estado === 'disponible' && (
-                                                <>
-                                                    <span className="text-gray-300">|</span>
-                                                    <button onClick={() => setConfirmarEliminar(n)}
-                                                        className="text-red-400 text-xs hover:underline hover:text-red-600">
-                                                        Eliminar
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                                                    {/* Vender — solo si disponible */}
+                                                    {n.estado === 'disponible' && (
+                                                        <>
+                                                            <span className="text-gray-300">|</span>
+                                                            <button onClick={() => { setSeleccionado(n); setModalVenta(true) }}
+                                                                className="flex items-center gap-1 text-xs text-green-600 hover:underline">
+                                                                <ShoppingCart size={11} /> <span>Vender</span>
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {/* Eliminar — solo si disponible (no vendido) */}
+                                                    {n.estado === 'disponible' && (
+                                                        <>
+                                                            <span className="text-gray-300">|</span>
+                                                            <button onClick={() => setConfirmarEliminar(n)}
+                                                                className="text-red-400 text-xs hover:underline hover:text-red-600">
+                                                                Eliminar
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </>
             )}
 
             {/* Modal ingresar / editar */}
