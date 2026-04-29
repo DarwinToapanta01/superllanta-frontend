@@ -30,17 +30,17 @@ export default function Dashboard() {
     const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches'
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-4">
 
-            {/* Bienvenida */}
+            {/* Bienvenida — ancho completo */}
             <div className="bg-[#1C3F6E] rounded-xl p-5 flex items-center justify-between">
                 <div>
                     <div className="text-white/60 text-xs mb-1">{saludo},</div>
                     <div className="text-white text-lg font-bold">{usuario?.nombre} {usuario?.apellido || ''}</div>
                     <div className="text-[#F5C400] text-xs mt-1 capitalize flex items-center gap-1">
                         {esAdmin
-                            ? <><CheckCircle size={11} /> Administrador — acceso completo</>
-                            : <><UserCog size={11} /> Técnico</>
+                            ? <><CheckCircle size={11} /> <span>Administrador — acceso completo</span></>
+                            : <><UserCog size={11} /> <span>Técnico</span></>
                         }
                     </div>
                 </div>
@@ -59,36 +59,38 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* Métricas del día */}
-            <div>
-                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-                    <Activity size={12} />
-                    Actividad de hoy
-                </div>
-                <div className="grid grid-cols-4 gap-3">
+            {/* Métricas 2x2 + Gráfica lado a lado */}
+            <div className="flex gap-4">
+
+                {/* Métricas en grid 2x2 — ancho fijo */}
+                <div className="grid grid-cols-2 gap-3 flex-shrink-0 w-72">
                     {[
-                        { label: 'Servicios totales', valor: data?.hoy?.servicios, icon: Activity, color: 'text-[#1C3F6E]', bg: 'bg-blue-50', sub: 'realizados hoy' },
-                        { label: 'Vulcanizados', valor: data?.hoy?.vulcanizados, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-50', sub: 'ingresados hoy' },
-                        { label: 'Reencauches', valor: data?.hoy?.reencauches, icon: RefreshCw, color: 'text-blue-500', bg: 'bg-blue-50', sub: 'ingresados hoy' },
-                        { label: 'Reparaciones', valor: data?.hoy?.reparaciones, icon: Wrench, color: 'text-green-500', bg: 'bg-green-50', sub: 'realizadas hoy' },
+                        { label: 'Servicios', valor: data?.hoy?.servicios, icon: Activity, color: 'text-[#1C3F6E]', bg: 'bg-blue-50', sub: 'hoy' },
+                        { label: 'Vulcanizados', valor: data?.hoy?.vulcanizados, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-50', sub: 'hoy' },
+                        { label: 'Reencauches', valor: data?.hoy?.reencauches, icon: RefreshCw, color: 'text-blue-500', bg: 'bg-blue-50', sub: 'hoy' },
+                        { label: 'Reparaciones', valor: data?.hoy?.reparaciones, icon: Wrench, color: 'text-green-500', bg: 'bg-green-50', sub: 'hoy' },
                     ].map(({ label, valor, icon: Icon, color, bg, sub }) => (
                         <div key={label} className="bg-white border border-gray-200 rounded-xl p-4">
-                            <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center justify-between mb-2">
                                 <span className="text-xs text-gray-500">{label}</span>
-                                <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center`}>
-                                    <Icon size={15} className={color} />
+                                <div className={`w-7 h-7 rounded-lg ${bg} flex items-center justify-center`}>
+                                    <Icon size={13} className={color} />
                                 </div>
                             </div>
                             <div className="text-3xl font-bold text-[#1A2332]">{valor ?? 0}</div>
-                            <div className="text-[10px] text-gray-400 mt-1">{sub}</div>
+                            <div className="text-[10px] text-gray-400 mt-0.5">{sub}</div>
                         </div>
                     ))}
+                </div>
+
+                {/* Gráfica compacta — 3 columnas */}
+                <div className="flex-1 min-w-0" style={{ height: '200px' }}>
+                    <GraficaTendencias compact />
                 </div>
             </div>
 
             {/* Ingreso del día + Pendientes + Alertas */}
             <div className="grid grid-cols-3 gap-3">
-                {/* Ingreso del día */}
                 <div className="bg-gradient-to-br from-[#1C3F6E] to-[#2563A8] rounded-xl p-4 text-white">
                     <div className="flex items-center gap-2 mb-2">
                         <TrendingUp size={14} className="text-[#F5C400]" />
@@ -107,11 +109,10 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Servicios pendientes */}
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                         <Clock size={14} className="text-orange-500" />
-                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Pendientes de entrega</span>
+                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Pendientes</span>
                     </div>
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
@@ -133,72 +134,40 @@ export default function Dashboard() {
                             <span className="text-lg font-bold text-[#1A2332]">{data?.pendientes?.reencauches ?? 0}</span>
                         </div>
                         <div className="pt-2 border-t border-gray-100 flex justify-between">
-                            <span className="text-xs text-gray-500">Total pendiente</span>
+                            <span className="text-xs text-gray-500">Total</span>
                             <span className="text-sm font-bold text-orange-500">{data?.pendientes?.total ?? 0} órdenes</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Alertas de stock */}
                 <div className={`rounded-xl p-4 border ${data?.generales?.alertasStock > 0 ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200'}`}>
                     <div className="flex items-center gap-2 mb-3">
                         <AlertTriangle size={14} className={data?.generales?.alertasStock > 0 ? 'text-red-500' : 'text-gray-400'} />
-                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Alertas de stock</span>
+                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Alertas stock</span>
                     </div>
                     {data?.generales?.alertasStock === 0 ? (
                         <div className="text-center py-3">
                             <CheckCircle size={24} className="text-green-500 mx-auto mb-2" />
-                            <p className="text-xs text-gray-500">Todos los insumos tienen stock suficiente</p>
+                            <p className="text-xs text-gray-500">Stock suficiente en todos los insumos</p>
                         </div>
                     ) : (
                         <div className="space-y-2">
                             {data?.alertasStock?.slice(0, 3).map(p => (
                                 <div key={p.id_producto} className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-red-100">
                                     <span className="text-xs text-gray-700 truncate flex-1">{p.nombre}</span>
-                                    <span className="text-xs font-bold text-red-500 ml-2">
-                                        {p.stock}/{p.stock_minimo}
-                                    </span>
+                                    <span className="text-xs font-bold text-red-500 ml-2">{p.stock}/{p.stock_minimo}</span>
                                 </div>
                             ))}
                             {data?.generales?.alertasStock > 3 && (
-                                <p className="text-[10px] text-red-400 text-center">
-                                    +{data.generales.alertasStock - 3} más en alerta
-                                </p>
+                                <p className="text-[10px] text-red-400 text-center">+{data.generales.alertasStock - 3} más en alerta</p>
                             )}
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Estadísticas generales */}
-            <div>
-                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-                    <TrendingUp size={12} />
-                    Estadísticas generales del sistema
-                </div>
-                <div className="grid grid-cols-4 gap-3">
-                    {[
-                        { label: 'Clientes registrados', valor: data?.generales?.clientes, icon: Users, color: 'text-[#1C3F6E]', bg: 'bg-blue-50' },
-                        { label: 'Neumáticos con QR', valor: data?.generales?.neumaticos, icon: QrCode, color: 'text-purple-500', bg: 'bg-purple-50' },
-                        { label: 'Usuarios activos', valor: data?.generales?.usuarios, icon: UserCog, color: 'text-green-500', bg: 'bg-green-50' },
-                        { label: 'Insumos en alerta', valor: data?.generales?.alertasStock, icon: Package, color: data?.generales?.alertasStock > 0 ? 'text-red-500' : 'text-gray-400', bg: data?.generales?.alertasStock > 0 ? 'bg-red-50' : 'bg-gray-50' },
-                    ].map(({ label, valor, icon: Icon, color, bg }) => (
-                        <div key={label} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
-                                <Icon size={18} className={color} />
-                            </div>
-                            <div>
-                                <div className="text-xl font-bold text-[#1A2332]">{valor ?? 0}</div>
-                                <div className="text-[10px] text-gray-500">{label}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
             {/* Actividad reciente */}
             <div className="grid grid-cols-2 gap-4">
-                {/* Últimas reparaciones */}
                 <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
                     <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-gray-50">
                         <Wrench size={13} className="text-green-500" />
@@ -228,7 +197,6 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Últimos vulcanizados */}
                 <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
                     <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-gray-50">
                         <Flame size={13} className="text-orange-500" />
@@ -259,9 +227,7 @@ export default function Dashboard() {
                                         {fmt(parseFloat(v.abono || 0) + parseFloat(v.saldo || 0))}
                                     </div>
                                     {parseFloat(v.saldo) > 0 && (
-                                        <div className="text-[10px] text-red-400">
-                                            -{fmt(v.saldo)} saldo
-                                        </div>
+                                        <div className="text-[10px] text-red-400">-{fmt(v.saldo)} saldo</div>
                                     )}
                                 </div>
                             </div>
@@ -269,7 +235,6 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
-            <GraficaTendencias />
         </div>
     )
 }

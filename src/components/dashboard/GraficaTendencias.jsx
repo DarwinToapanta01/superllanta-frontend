@@ -29,10 +29,10 @@ const formatFecha = (fecha) => {
     return d.toLocaleDateString('es-EC', { day: 'numeric', month: 'short' })
 }
 
-export default function GraficaTendencias() {
-    const [dias, setDias] = useState(30)
-    const [tipoGrafica, setTipoGrafica] = useState('lineas') // 'lineas' | 'barras'
-    const [vista, setVista] = useState('servicios') // 'servicios' | 'ingreso'
+export default function GraficaTendencias({ compact = false }) {
+    const [dias, setDias] = useState(compact ? 7 : 30)
+    const [tipoGrafica, setTipoGrafica] = useState('lineas')
+    const [vista, setVista] = useState('servicios')
 
     const { data: tendencias = [], isLoading } = useQuery({
         queryKey: ['tendencias', dias],
@@ -50,65 +50,52 @@ export default function GraficaTendencias() {
     const ChartComponent = tipoGrafica === 'lineas' ? LineChart : BarChart
 
     return (
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
+        <div className={`bg-white border border-gray-200 rounded-xl p-4 ${compact ? 'h-full' : ''}`}>
+            {/* Header más compacto */}
+            <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                    <TrendingUp size={15} className="text-[#1C3F6E]" />
+                    <TrendingUp size={13} className="text-[#1C3F6E]" />
                     <span className="text-xs font-semibold text-[#1A2332] uppercase tracking-wide">
                         Tendencias
                     </span>
                 </div>
-
-                <div className="flex items-center gap-2">
-                    {/* Vista servicios/ingreso */}
+                <div className="flex items-center gap-1.5">
+                    {/* Vista */}
                     <div className="flex border border-gray-200 rounded-lg overflow-hidden">
                         <button onClick={() => setVista('servicios')}
-                            className={`px-3 h-7 text-[10px] font-medium transition-colors ${vista === 'servicios' ? 'bg-[#1C3F6E] text-white' : 'text-gray-500 hover:bg-gray-50'
-                                }`}>
-                            Servicios
-                        </button>
+                            className={`px-2.5 h-6 text-[10px] font-medium transition-colors ${vista === 'servicios' ? 'bg-[#1C3F6E] text-white' : 'text-gray-500 hover:bg-gray-50'
+                                }`}>Servicios</button>
                         <button onClick={() => setVista('ingreso')}
-                            className={`px-3 h-7 text-[10px] font-medium transition-colors ${vista === 'ingreso' ? 'bg-[#1C3F6E] text-white' : 'text-gray-500 hover:bg-gray-50'
-                                }`}>
-                            Ingresos $
-                        </button>
+                            className={`px-2.5 h-6 text-[10px] font-medium transition-colors ${vista === 'ingreso' ? 'bg-[#1C3F6E] text-white' : 'text-gray-500 hover:bg-gray-50'
+                                }`}>$ Ingresos</button>
                     </div>
-
-                    {/* Tipo gráfica */}
+                    {/* Tipo */}
                     <div className="flex border border-gray-200 rounded-lg overflow-hidden">
                         <button onClick={() => setTipoGrafica('lineas')}
-                            className={`px-2 h-7 transition-colors ${tipoGrafica === 'lineas' ? 'bg-[#1C3F6E] text-white' : 'text-gray-400 hover:bg-gray-50'
-                                }`}>
-                            <TrendingUp size={12} />
-                        </button>
+                            className={`px-1.5 h-6 transition-colors ${tipoGrafica === 'lineas' ? 'bg-[#1C3F6E] text-white' : 'text-gray-400 hover:bg-gray-50'
+                                }`}><TrendingUp size={11} /></button>
                         <button onClick={() => setTipoGrafica('barras')}
-                            className={`px-2 h-7 transition-colors ${tipoGrafica === 'barras' ? 'bg-[#1C3F6E] text-white' : 'text-gray-400 hover:bg-gray-50'
-                                }`}>
-                            <BarChart2 size={12} />
-                        </button>
+                            className={`px-1.5 h-6 transition-colors ${tipoGrafica === 'barras' ? 'bg-[#1C3F6E] text-white' : 'text-gray-400 hover:bg-gray-50'
+                                }`}><BarChart2 size={11} /></button>
                     </div>
-
                     {/* Período */}
                     <div className="flex border border-gray-200 rounded-lg overflow-hidden">
                         {FILTROS.map(f => (
                             <button key={f.valor} onClick={() => setDias(f.valor)}
-                                className={`px-3 h-7 text-[10px] font-medium transition-colors ${dias === f.valor ? 'bg-[#1C3F6E] text-white' : 'text-gray-500 hover:bg-gray-50'
-                                    }`}>
-                                {f.label}
-                            </button>
+                                className={`px-2.5 h-6 text-[10px] font-medium transition-colors ${dias === f.valor ? 'bg-[#1C3F6E] text-white' : 'text-gray-500 hover:bg-gray-50'
+                                    }`}>{f.label}</button>
                         ))}
                     </div>
                 </div>
             </div>
 
-            {/* Gráfica */}
+            {/* Gráfica más pequeña en modo compact */}
             {isLoading ? (
-                <div className="h-48 flex items-center justify-center text-xs text-gray-400">
+                <div className="h-full flex items-center justify-center text-xs text-gray-400">
                     Cargando datos...
                 </div>
             ) : (
-                <ResponsiveContainer width="100%" height={220}>
+                <ResponsiveContainer width="100%" height={compact ? '100%' : 220}>
                     {vista === 'servicios' ? (
                         <ChartComponent data={datosFormateados} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
