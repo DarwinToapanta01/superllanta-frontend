@@ -56,7 +56,7 @@ export default function GraficaTendencias({ compact = false }) {
                 <div className="flex items-center gap-2">
                     <TrendingUp size={13} className="text-[#1C3F6E]" />
                     <span className="text-xs font-semibold text-[#1A2332] uppercase tracking-wide">
-                        Tendencias
+                        METRICAS
                     </span>
                 </div>
                 <div className="flex items-center gap-1.5">

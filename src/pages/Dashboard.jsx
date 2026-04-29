@@ -84,7 +84,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Gráfica compacta — 3 columnas */}
-                <div className="flex-1 min-w-0" style={{ height: '200px' }}>
+                <div className="flex-1 min-w-0" style={{ height: '185px' }}>
                     <GraficaTendencias compact />
                 </div>
             </div>
